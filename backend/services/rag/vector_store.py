@@ -1,48 +1,47 @@
 """
 Vector Store — ChromaDB-backed document store for RAG.
-Indexes road projects, contractor data, and complaint summaries.
+Uses in-process persistent client (no separate server needed on free hosting).
 """
 
 import chromadb
-from chromadb.config import Settings as ChromaSettings
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain.schema import Document
 from typing import List, Optional
 from loguru import logger
+import os
 
 from core.config import settings
 
-# Global vector store instance
 _vector_store: Optional[Chroma] = None
-_chroma_client: Optional[chromadb.HttpClient] = None
 
 
 async def init_vector_store():
-    """Initialize ChromaDB connection and embeddings on startup."""
-    global _vector_store, _chroma_client
+    """Initialize ChromaDB as an in-process persistent store."""
+    global _vector_store
 
     try:
-        _chroma_client = chromadb.HttpClient(
-            host=settings.CHROMA_HOST,
-            port=settings.CHROMA_PORT,
-        )
-
         embeddings = OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
             openai_api_key=settings.OPENAI_API_KEY,
         )
 
+        # Use persistent local client — works on Render free tier without a separate service
+        persist_dir = os.environ.get("CHROMA_PERSIST_DIR", "./chroma_data")
+        os.makedirs(persist_dir, exist_ok=True)
+
+        chroma_client = chromadb.PersistentClient(path=persist_dir)
+
         _vector_store = Chroma(
-            client=_chroma_client,
+            client=chroma_client,
             collection_name=settings.CHROMA_COLLECTION,
             embedding_function=embeddings,
         )
 
-        logger.info("✅ Vector store (ChromaDB) initialized")
+        logger.info("✅ Vector store (ChromaDB persistent) initialized")
 
     except Exception as e:
-        logger.warning(f"⚠️ Vector store init failed (will use fallback): {e}")
+        logger.warning(f"⚠️ Vector store init failed (RAG will use fallback): {e}")
         _vector_store = None
 
 
@@ -51,9 +50,8 @@ def get_vector_store() -> Optional[Chroma]:
 
 
 async def add_documents(documents: List[Document]):
-    """Add documents to the vector store."""
     if _vector_store is None:
-        logger.warning("Vector store not available, skipping document indexing")
+        logger.warning("Vector store not available, skipping indexing")
         return
     _vector_store.add_documents(documents)
     logger.info(f"Added {len(documents)} documents to vector store")
@@ -64,16 +62,10 @@ async def query_vector_store(
     k: int = 5,
     filter_dict: Optional[dict] = None,
 ) -> List[Document]:
-    """Query the vector store for relevant documents."""
     if _vector_store is None:
         return []
     try:
-        results = _vector_store.similarity_search(
-            query,
-            k=k,
-            filter=filter_dict,
-        )
-        return results
+        return _vector_store.similarity_search(query, k=k, filter=filter_dict)
     except Exception as e:
         logger.error(f"Vector store query failed: {e}")
         return []

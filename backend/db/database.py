@@ -6,9 +6,11 @@ from core.config import settings
 from loguru import logger
 
 
-# Convert sync URL to async
-DATABASE_URL = settings.DATABASE_URL.replace(
-    "postgresql://", "postgresql+asyncpg://"
+# Convert to async URL — handles postgresql://, postgres:// (Neon/Render format)
+_raw = settings.DATABASE_URL
+DATABASE_URL = (
+    _raw.replace("postgres://", "postgresql+asyncpg://")
+        .replace("postgresql://", "postgresql+asyncpg://")
 )
 
 engine = create_async_engine(

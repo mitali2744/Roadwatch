@@ -27,12 +27,16 @@ class Settings(BaseSettings):
     CHROMA_PORT: int = 8001
     CHROMA_COLLECTION: str = "roadwatch_docs"
 
-    # CORS
+    # CORS — add your Vercel URL here after deploying frontend
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
+        "https://*.vercel.app",
     ]
+
+    # Vercel frontend URL (set this env var on Render after deploying frontend)
+    FRONTEND_URL: str = ""
 
     # File uploads
     MAX_UPLOAD_SIZE_MB: int = 10
