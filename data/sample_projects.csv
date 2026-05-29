@@ -1,0 +1,9 @@
+title,road_number,contractor_name,authority_type,budget_sanctioned_inr,budget_spent_inr,currency,start_date,planned_end_date,last_relaying_date,status,is_anomalous,country_code
+Repair and Widening of NH-275 Bangalore-Mysore,NH-275,Larsen & Toubro Infrastructure,NHAI,450000000,423000000,INR,2024-01-15,2025-06-30,2024-08-20,COMPLETED,false,IN
+Pothole Repair - Outer Ring Road Phase 1,SH-35,Dilip Buildcon Ltd,PWD,85000000,92000000,INR,2025-03-01,2025-09-30,2025-05-15,ONGOING,true,IN
+Resurfacing of Sarjapur Road,MDR-123,GR Infraprojects,PWD,32000000,31500000,INR,2025-01-10,2025-07-31,2025-04-20,COMPLETED,false,IN
+Emergency Repair - Whitefield Main Road,LOCAL-001,KNR Constructions,MUNICIPAL,8500000,12000000,INR,2025-06-01,2025-08-31,2025-07-10,ONGOING,true,IN
+NH-44 Hosur Road Expansion,NH-44,Larsen & Toubro Infrastructure,NHAI,280000000,195000000,INR,2024-06-01,2026-03-31,,ONGOING,false,IN
+Resurfacing of Whitefield Main Road,LOCAL-001,Ashoka Buildcon,MUNICIPAL,9200000,9100000,INR,2024-12-01,2025-03-31,2025-02-15,COMPLETED,true,IN
+MG Road Beautification and Repair,LOCAL-002,KNR Constructions,MUNICIPAL,15000000,14800000,INR,2025-02-01,2025-05-31,2025-04-01,COMPLETED,false,IN
+NH-48 Expressway Maintenance,NH-48,Larsen & Toubro Infrastructure,NHAI,1200000000,980000000,INR,2024-04-01,2025-12-31,2024-10-15,ONGOING,false,IN

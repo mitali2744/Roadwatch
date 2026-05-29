@@ -1,0 +1,164 @@
+{
+  "project": "RoadWatch AI Chatbot",
+  "version": "1.0",
+  "hackathon_focus": ["Data Accuracy", "Complaint Routing", "Budget Transparency", "UI/Accessibility", "Cross-Country Integration"],
+  "features": [
+
+    // ─── BASE FEATURES ───────────────────────────────────────────────────────────
+
+    {
+      "id": 1,
+      "category": "Base",
+      "feature_name": "Road Info Display",
+      "description": "Shows road type, contractor details, allocated budget, and scheduled/completed repair dates for any queried road segment.",
+      "tech_used": ["REST API", "PostGIS", "OpenStreetMap", "React"],
+      "wow_factor": 6
+    },
+    {
+      "id": 2,
+      "category": "Base",
+      "feature_name": "Complaint Reporting with GPS + Image Upload",
+      "description": "Citizens submit road damage reports with auto-captured GPS coordinates and photo evidence, stored with timestamp metadata.",
+      "tech_used": ["Geolocation API", "Cloudinary / S3", "React Native / PWA", "Node.js"],
+      "wow_factor": 6
+    },
+    {
+      "id": 3,
+      "category": "Base",
+      "feature_name": "AI Chatbot with RAG + Vector DB",
+      "description": "Conversational chatbot answers road-related queries using Retrieval-Augmented Generation over a vector database of road records, policies, and complaints.",
+      "tech_used": ["LangChain", "OpenAI GPT-4", "Pinecone / Weaviate", "FastAPI"],
+      "wow_factor": 8
+    },
+    {
+      "id": 4,
+      "category": "Base",
+      "feature_name": "Transparency Dashboard",
+      "description": "Public-facing dashboard showing budget allocations, contractor performance, complaint resolution rates, and project timelines.",
+      "tech_used": ["React", "Chart.js / Recharts", "PostgreSQL", "GraphQL"],
+      "wow_factor": 7
+    },
+    {
+      "id": 5,
+      "category": "Base",
+      "feature_name": "Geo-Fenced Lookup",
+      "description": "Users get road info and complaints relevant only to their current geographic zone, reducing noise and improving relevance.",
+      "tech_used": ["Turf.js", "PostGIS", "Mapbox GL JS", "Redis (geo queries)"],
+      "wow_factor": 7
+    },
+    {
+      "id": 6,
+      "category": "Base",
+      "feature_name": "Offline Functionality (PWA)",
+      "description": "Progressive Web App with service workers caches road data and allows complaint drafting offline; syncs when connectivity is restored.",
+      "tech_used": ["Service Workers", "IndexedDB", "Workbox", "React PWA"],
+      "wow_factor": 7
+    },
+    {
+      "id": 7,
+      "category": "Base",
+      "feature_name": "Global Applicability",
+      "description": "Multi-language support and adaptable data schemas to accommodate road governance structures across different countries.",
+      "tech_used": ["i18next", "ISO 3166 country codes", "Modular API adapters", "Unicode CLDR"],
+      "wow_factor": 7
+    },
+
+    // ─── ENHANCED / INNOVATIVE FEATURES ─────────────────────────────────────────
+
+    {
+      "id": 8,
+      "category": "Enhanced",
+      "feature_name": "AI Pothole Severity Scorer",
+      "description": "Uploaded complaint images are analyzed by a computer vision model that auto-classifies damage severity (Low / Medium / Critical) and estimates repair urgency score. This score directly influences complaint routing priority.",
+      "tech_used": ["TensorFlow.js / YOLOv8", "OpenCV", "AWS Rekognition (fallback)", "Python FastAPI"],
+      "wow_factor": 10
+    },
+    {
+      "id": 9,
+      "category": "Enhanced",
+      "feature_name": "Smart Complaint Router",
+      "description": "Complaints are automatically routed to the correct government department, contractor, or municipal body based on road type, jurisdiction, and severity — with escalation rules if unacknowledged within SLA windows. Citizens receive real-time status updates via SMS/email.",
+      "tech_used": ["Rule Engine (Drools / custom)", "Twilio SMS", "SendGrid", "Kafka (event streaming)", "PostgreSQL"],
+      "wow_factor": 9
+    },
+    {
+      "id": 10,
+      "category": "Enhanced",
+      "feature_name": "Predictive Road Deterioration Model",
+      "description": "ML model trained on historical repair data, weather patterns, traffic load, and road age predicts which road segments are likely to deteriorate in the next 30–90 days, enabling proactive maintenance before complaints arise.",
+      "tech_used": ["scikit-learn / XGBoost", "OpenWeatherMap API", "Historical road DB", "Python", "Plotly Dash"],
+      "wow_factor": 10
+    },
+    {
+      "id": 11,
+      "category": "Enhanced",
+      "feature_name": "Contractor Accountability Scorecard",
+      "description": "Each contractor gets a public trust score calculated from: repair durability (re-complaint rate), on-time delivery, budget adherence, and citizen ratings. Score is visible on the dashboard and influences future contract eligibility.",
+      "tech_used": ["PostgreSQL", "Weighted scoring algorithm", "React", "Chart.js"],
+      "wow_factor": 9
+    },
+    {
+      "id": 12,
+      "category": "Enhanced",
+      "feature_name": "Crowdsourced Road Condition Heatmap",
+      "description": "Aggregates anonymized complaint data and user-reported conditions into a live heatmap overlay on the map. Darker zones indicate higher complaint density, giving citizens and officials an at-a-glance view of problem areas.",
+      "tech_used": ["Mapbox GL JS (heatmap layer)", "WebSockets (live updates)", "Redis", "D3.js"],
+      "wow_factor": 8
+    },
+    {
+      "id": 13,
+      "category": "Enhanced",
+      "feature_name": "Voice-First Accessibility Mode",
+      "description": "Full voice interaction with the AI chatbot — users can report complaints, ask road queries, and navigate the app entirely by voice. Supports regional accents and low-literacy users. Critical for rural and accessibility-impaired populations.",
+      "tech_used": ["Web Speech API", "Whisper (OpenAI STT)", "gTTS / ElevenLabs TTS", "ARIA accessibility standards"],
+      "wow_factor": 9
+    },
+    {
+      "id": 14,
+      "category": "Enhanced",
+      "feature_name": "Budget Anomaly Detector",
+      "description": "Automated auditing layer that flags statistical anomalies in budget spending — e.g., a road segment billed 3x the regional average, or repeated repairs on the same stretch within short intervals — and surfaces them on the transparency dashboard as 'Flagged for Review'.",
+      "tech_used": ["Isolation Forest (anomaly detection)", "Python", "PostgreSQL", "React alert components"],
+      "wow_factor": 10
+    },
+    {
+      "id": 15,
+      "category": "Enhanced",
+      "feature_name": "Cross-Country Data Federation Layer",
+      "description": "A standardized API gateway that normalizes road data from heterogeneous government sources across countries (different schemas, formats, languages) into a unified RoadWatch data model. Enables cross-border road condition comparisons and policy benchmarking.",
+      "tech_used": ["GraphQL Federation", "Apache Kafka", "ETL pipelines (Apache Airflow)", "JSON-LD / Schema.org", "OAuth2 per country"],
+      "wow_factor": 9
+    },
+    {
+      "id": 16,
+      "category": "Enhanced",
+      "feature_name": "Immutable Complaint Ledger (Blockchain Audit Trail)",
+      "description": "Every complaint submission, status update, and resolution action is recorded on a lightweight blockchain or append-only ledger, making the complaint lifecycle tamper-proof. Citizens can verify their complaint was not silently deleted or altered.",
+      "tech_used": ["Hyperledger Fabric / Polygon (lightweight)", "IPFS (image storage)", "Smart contracts", "Web3.js"],
+      "wow_factor": 9
+    },
+    {
+      "id": 17,
+      "category": "Enhanced",
+      "feature_name": "Multilingual RAG with Local Governance Context",
+      "description": "The RAG pipeline is extended with country-specific and language-specific document corpora — local road laws, municipal bylaws, contractor regulations — so the chatbot gives legally accurate, jurisdiction-aware answers in the user's native language.",
+      "tech_used": ["LangChain multilingual embeddings", "mBERT / LaBSE", "Pinecone namespaces per country", "DeepL / Google Translate API"],
+      "wow_factor": 9
+    }
+  ],
+
+  "summary": {
+    "total_features": 17,
+    "base_features": 7,
+    "enhanced_features": 10,
+    "avg_wow_factor_base": 6.9,
+    "avg_wow_factor_enhanced": 9.3,
+    "top_differentiators": [
+      "AI Pothole Severity Scorer",
+      "Predictive Road Deterioration Model",
+      "Budget Anomaly Detector",
+      "Immutable Complaint Ledger",
+      "Smart Complaint Router"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+road_number,name,road_type,state,district,length_km,condition_score,last_survey_date,country_code
+NH-275,Bangalore-Mysore Highway,NH,Karnataka,Bangalore Rural,139.0,72.5,2025-11-15,IN
+NH-44,Hosur Road,NH,Karnataka,Bangalore Urban,40.0,58.3,2025-10-20,IN
+SH-35,Outer Ring Road Bangalore,SH,Karnataka,Bangalore Urban,62.0,45.1,2025-09-10,IN
+MDR-123,Sarjapur Road,MDR,Karnataka,Bangalore Urban,18.0,38.7,2025-08-05,IN
+LOCAL-001,Whitefield Main Road,LOCAL,Karnataka,Bangalore Urban,8.0,25.4,2025-07-22,IN
+NH-48,Delhi-Mumbai Expressway,EXPRESSWAY,Maharashtra,Mumbai,1350.0,88.2,2025-12-01,IN
+SH-12,Pune-Nashik Highway,SH,Maharashtra,Pune,210.0,61.5,2025-11-01,IN
+NH-16,Chennai-Kolkata Highway,NH,Andhra Pradesh,Vijayawada,1700.0,55.8,2025-10-15,IN
+MDR-45,Hyderabad Ring Road,MDR,Telangana,Hyderabad,158.0,42.3,2025-09-20,IN
+LOCAL-002,MG Road Bangalore,LOCAL,Karnataka,Bangalore Urban,5.2,31.0,2025-08-30,IN

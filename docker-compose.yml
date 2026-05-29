@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+  # PostgreSQL with PostGIS
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: roadwatch_db
+    environment:
+      POSTGRES_DB: roadwatch
+      POSTGRES_USER: roadwatch
+      POSTGRES_PASSWORD: roadwatch123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U roadwatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and geo queries
+  redis:
+    image: redis:7-alpine
+    container_name: roadwatch_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: roadwatch_backend
+    environment:
+      DATABASE_URL: postgresql://roadwatch:roadwatch123@db:5432/roadwatch
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MAPBOX_TOKEN: ${MAPBOX_TOKEN}
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: roadwatch_chroma
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadata:/chroma/chroma
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: roadwatch_frontend
+    environment:
+      VITE_API_URL: http://localhost:8000
+      VITE_MAPBOX_TOKEN: ${MAPBOX_TOKEN}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
+  redisdata:
+  chromadata:

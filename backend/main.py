@@ -1,0 +1,70 @@
+"""
+RoadWatch Backend — FastAPI Application Entry Point
+AI-powered road transparency platform for Road Safety Hackathon 2026
+"""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+import os
+
+from api.routes import roads, complaints, chatbot, dashboard, auth, voice, predictions
+from db.database import init_db
+from services.rag.vector_store import init_vector_store
+from core.config import settings
+from loguru import logger
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events."""
+    logger.info("🚀 Starting RoadWatch API...")
+    await init_db()
+    await init_vector_store()
+    logger.info("✅ RoadWatch API ready")
+    yield
+    logger.info("🛑 Shutting down RoadWatch API...")
+
+
+app = FastAPI(
+    title="RoadWatch API",
+    description="AI-powered road transparency platform — Road Safety Hackathon 2026",
+    version="1.0.0",
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+)
+
+# ── Middleware ────────────────────────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+app.include_router(auth.router,        prefix="/api/auth",        tags=["Auth"])
+app.include_router(roads.router,       prefix="/api/roads",       tags=["Roads"])
+app.include_router(complaints.router,  prefix="/api/complaints",  tags=["Complaints"])
+app.include_router(chatbot.router,     prefix="/api/chatbot",     tags=["AI Chatbot"])
+app.include_router(dashboard.router,   prefix="/api/dashboard",   tags=["Dashboard"])
+app.include_router(voice.router,       prefix="/api/voice",       tags=["Voice"])
+app.include_router(predictions.router, prefix="/api/predictions", tags=["ML Predictions"])
+
+# Static files (uploaded images)
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+@app.get("/api/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": "RoadWatch API",
+        "version": "1.0.0",
+    }
