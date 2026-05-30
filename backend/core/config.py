@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = "llama3-70b-8192"  # free Groq model
     EMBEDDING_MODEL: str = "text-embedding-3-small"  # OpenAI embeddings (or swap below)
 
-    # Maps
-    MAPBOX_TOKEN: str = ""
+    # Maps — using OpenStreetMap (free, no key needed)
+    # MAPBOX_TOKEN removed — replaced with Leaflet + OSM
 
     # ChromaDB
     CHROMA_HOST: str = "localhost"

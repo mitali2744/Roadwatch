@@ -1,68 +1,59 @@
-import { useState, useCallback, useRef } from "react";
-import Map, { Marker, Popup, Source, Layer } from "react-map-gl";
-import { Layers, AlertTriangle, Navigation, Info } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
+import { Layers, Navigation, Info, AlertTriangle } from "lucide-react";
 import { useNearbyRoads } from "../hooks/useNearbyRoads";
 import { useComplaintHeatmap } from "../hooks/useComplaintHeatmap";
 import clsx from "clsx";
-
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
+import "leaflet/dist/leaflet.css";
 
 type LayerMode = "roads" | "heatmap" | "both";
 
+// Component to fly to user location
+function FlyTo({ lat, lon }: { lat: number; lon: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo([lat, lon], 14, { duration: 1.5 });
+  }, [lat, lon]);
+  return null;
+}
+
+const severityColor = (score: number) => {
+  if (score < 30) return "#ef4444";
+  if (score < 50) return "#f59e0b";
+  if (score < 70) return "#3b82f6";
+  return "#10b981";
+};
+
+const severityWeight = (sev: string) => {
+  const w: Record<string, number> = { CRITICAL: 5, HIGH: 3, MEDIUM: 2, LOW: 1 };
+  return w[sev] || 1;
+};
+
 export default function MapPage() {
-  const [viewport, setViewport] = useState({
-    latitude: 12.9716,
-    longitude: 77.5946,
-    zoom: 12,
-  });
-  const [selectedRoad, setSelectedRoad] = useState<any>(null);
+  const [center, setCenter] = useState<[number, number]>([12.9716, 77.5946]);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [layerMode, setLayerMode] = useState<LayerMode>("both");
-  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [flyTarget, setFlyTarget] = useState<[number, number] | null>(null);
 
-  const { roads, loading: roadsLoading } = useNearbyRoads(
-    userLocation?.lat ?? viewport.latitude,
-    userLocation?.lon ?? viewport.longitude,
-    5
-  );
+  const { roads } = useNearbyRoads(center[0], center[1], 5);
+  const { heatmapData } = useComplaintHeatmap(center[0], center[1], 10);
 
-  const { heatmapData } = useComplaintHeatmap(
-    userLocation?.lat ?? viewport.latitude,
-    userLocation?.lon ?? viewport.longitude,
-    10
-  );
-
-  const locateMe = useCallback(() => {
+  const locateMe = () => {
     navigator.geolocation.getCurrentPosition((pos) => {
-      const { latitude, longitude } = pos.coords;
-      setUserLocation({ lat: latitude, lon: longitude });
-      setViewport((v) => ({ ...v, latitude, longitude, zoom: 14 }));
-    });
-  }, []);
-
-  // Build heatmap GeoJSON
-  const heatmapGeoJSON = {
-    type: "FeatureCollection" as const,
-    features: heatmapData.map((p: any) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [p.lon, p.lat] },
-      properties: { weight: p.weight },
-    })),
-  };
-
-  const severityColor = (score: number) => {
-    if (score >= 70) return "#ef4444";
-    if (score >= 50) return "#f59e0b";
-    if (score >= 30) return "#3b82f6";
-    return "#10b981";
+      const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+      setUserLocation(loc);
+      setFlyTarget(loc);
+      setCenter(loc);
+    }, () => alert("Could not get location. Please enable GPS."));
   };
 
   return (
-    <div className="md:ml-16 h-[calc(100vh-56px)] flex flex-col">
+    <div className="md:ml-16 h-[calc(100vh-56px)] relative">
       {/* Controls */}
-      <div className="absolute top-20 right-4 z-10 flex flex-col gap-2">
+      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
         <button
           onClick={locateMe}
-          className="bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg hover:bg-slate-800 transition-colors shadow-lg"
+          className="bg-slate-900 border border-slate-700 text-white p-2.5 rounded-lg hover:bg-slate-800 shadow-lg"
           title="Locate me"
         >
           <Navigation size={18} />
@@ -75,9 +66,7 @@ export default function MapPage() {
               onClick={() => setLayerMode(mode)}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 text-xs w-full transition-colors",
-                layerMode === mode
-                  ? "bg-brand-700 text-white"
-                  : "text-slate-400 hover:bg-slate-800"
+                layerMode === mode ? "bg-brand-700 text-white" : "text-slate-400 hover:bg-slate-800"
               )}
             >
               <Layers size={12} />
@@ -88,126 +77,108 @@ export default function MapPage() {
       </div>
 
       {/* Map */}
-      <Map
-        {...viewport}
-        onMove={(e) => setViewport(e.viewState)}
-        mapboxAccessToken={MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
-        style={{ width: "100%", height: "100%" }}
+      <MapContainer
+        center={center}
+        zoom={13}
+        style={{ height: "100%", width: "100%", background: "#0f172a" }}
+        zoomControl={false}
       >
-        {/* Heatmap layer */}
-        {(layerMode === "heatmap" || layerMode === "both") && heatmapData.length > 0 && (
-          <Source id="complaints-heat" type="geojson" data={heatmapGeoJSON}>
-            <Layer
-              id="heatmap-layer"
-              type="heatmap"
-              paint={{
-                "heatmap-weight": ["get", "weight"],
-                "heatmap-intensity": 1.5,
-                "heatmap-color": [
-                  "interpolate", ["linear"], ["heatmap-density"],
-                  0, "rgba(0,0,255,0)",
-                  0.2, "rgba(0,255,255,0.5)",
-                  0.5, "rgba(255,255,0,0.7)",
-                  0.8, "rgba(255,128,0,0.9)",
-                  1, "rgba(255,0,0,1)",
-                ],
-                "heatmap-radius": 30,
-                "heatmap-opacity": 0.7,
-              }}
-            />
-          </Source>
+        {/* Free OpenStreetMap tiles — no API key needed */}
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        />
+
+        {/* Fly to user location */}
+        {flyTarget && <FlyTo lat={flyTarget[0]} lon={flyTarget[1]} />}
+
+        {/* User location marker */}
+        {userLocation && (
+          <CircleMarker
+            center={userLocation}
+            radius={10}
+            pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 1, weight: 3 }}
+          >
+            <Popup>📍 Your location</Popup>
+          </CircleMarker>
         )}
 
         {/* Road markers */}
         {(layerMode === "roads" || layerMode === "both") &&
-          roads.map((road: any) => (
-            <Marker
-              key={road.id}
-              latitude={viewport.latitude + (Math.random() - 0.5) * 0.02}
-              longitude={viewport.longitude + (Math.random() - 0.5) * 0.02}
-              onClick={() => setSelectedRoad(road)}
-            >
-              <div
-                className="w-3 h-3 rounded-full border-2 border-white cursor-pointer hover:scale-150 transition-transform"
-                style={{ backgroundColor: severityColor(road.condition_score || 50) }}
-              />
-            </Marker>
-          ))}
-
-        {/* User location */}
-        {userLocation && (
-          <Marker latitude={userLocation.lat} longitude={userLocation.lon}>
-            <div className="w-4 h-4 bg-brand-500 rounded-full border-2 border-white shadow-lg pulse-critical" />
-          </Marker>
-        )}
-
-        {/* Road popup */}
-        {selectedRoad && (
-          <Popup
-            latitude={viewport.latitude}
-            longitude={viewport.longitude}
-            onClose={() => setSelectedRoad(null)}
-            closeButton
-          >
-            <div className="min-w-[200px]">
-              <div className="font-semibold text-white mb-1">{selectedRoad.name}</div>
-              <div className="text-xs text-slate-400 mb-2">
-                {selectedRoad.road_number} · {selectedRoad.road_type}
-              </div>
-              {selectedRoad.project && (
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Contractor</span>
-                    <span className="text-slate-300">{selectedRoad.project.contractor_name || "N/A"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Budget</span>
-                    <span className="text-slate-300">
-                      ₹{((selectedRoad.project.budget_sanctioned || 0) / 1e7).toFixed(1)}Cr
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Last Repair</span>
-                    <span className="text-slate-300">
-                      {selectedRoad.project.last_relaying_date
-                        ? new Date(selectedRoad.project.last_relaying_date).toLocaleDateString()
-                        : "N/A"}
-                    </span>
-                  </div>
-                  {selectedRoad.project.is_anomalous && (
-                    <div className="mt-2 flex items-center gap-1 text-red-400 text-xs">
-                      <AlertTriangle size={12} />
-                      Budget anomaly flagged
+          roads.map((road: any, i: number) => {
+            // Offset slightly so markers don't stack on same point
+            const lat = center[0] + (Math.random() - 0.5) * 0.04;
+            const lon = center[1] + (Math.random() - 0.5) * 0.04;
+            const color = severityColor(road.condition_score ?? 50);
+            return (
+              <CircleMarker
+                key={road.id || i}
+                center={[lat, lon]}
+                radius={8}
+                pathOptions={{ color, fillColor: color, fillOpacity: 0.85, weight: 2 }}
+              >
+                <Popup>
+                  <div className="min-w-[180px] text-sm">
+                    <div className="font-semibold mb-1">{road.name}</div>
+                    <div className="text-gray-500 text-xs mb-2">
+                      {road.road_number} · {road.road_type}
                     </div>
-                  )}
-                </div>
-              )}
-              <div className="mt-2 pt-2 border-t border-slate-700">
-                <div className="flex items-center gap-1.5">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: severityColor(selectedRoad.condition_score || 50) }}
-                  />
-                  <span className="text-xs text-slate-400">
-                    Condition: {selectedRoad.condition_score?.toFixed(0) || "N/A"}/100
-                  </span>
-                </div>
-                {selectedRoad.deterioration_risk && (
-                  <div className="text-xs text-slate-500 mt-0.5">
-                    Risk: {selectedRoad.deterioration_risk}
+                    {road.project && (
+                      <div className="space-y-1 text-xs">
+                        <div><span className="text-gray-500">Budget: </span>
+                          ₹{((road.project.budget_sanctioned || 0) / 1e7).toFixed(1)}Cr
+                        </div>
+                        <div><span className="text-gray-500">Last Repair: </span>
+                          {road.project.last_relaying_date
+                            ? new Date(road.project.last_relaying_date).toLocaleDateString()
+                            : "N/A"}
+                        </div>
+                        {road.project.is_anomalous && (
+                          <div className="text-red-500 flex items-center gap-1">
+                            <AlertTriangle size={10} /> Budget anomaly flagged
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="mt-2 text-xs text-gray-500">
+                      Condition: {road.condition_score?.toFixed(0) ?? "N/A"}/100
+                      {road.deterioration_risk && ` · Risk: ${road.deterioration_risk}`}
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-          </Popup>
-        )}
-      </Map>
+                </Popup>
+              </CircleMarker>
+            );
+          })}
+
+        {/* Complaint heatmap dots */}
+        {(layerMode === "heatmap" || layerMode === "both") &&
+          heatmapData.map((p: any, i: number) => {
+            const w = severityWeight(p.severity);
+            const colors: Record<number, string> = { 5: "#ef4444", 3: "#f97316", 2: "#eab308", 1: "#22c55e" };
+            const col = colors[w] || "#94a3b8";
+            return (
+              <CircleMarker
+                key={i}
+                center={[p.lat, p.lon]}
+                radius={4 + w * 2}
+                pathOptions={{ color: col, fillColor: col, fillOpacity: 0.5, weight: 1 }}
+              >
+                <Popup>
+                  <div className="text-xs">
+                    <div className="font-medium">{p.type?.replace("_", " ")}</div>
+                    <div className="text-gray-500">Severity: {p.severity || "N/A"}</div>
+                    <div className="text-gray-500">Status: {p.status}</div>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            );
+          })}
+      </MapContainer>
 
       {/* Legend */}
-      <div className="absolute bottom-20 left-4 bg-slate-900/90 border border-slate-700 rounded-lg p-3 text-xs">
+      <div className="absolute bottom-20 left-4 z-[1000] bg-slate-900/95 border border-slate-700 rounded-lg p-3 text-xs">
         <div className="font-medium text-slate-300 mb-2 flex items-center gap-1">
-          <Info size={12} /> Legend
+          <Info size={12} /> Road Condition
         </div>
         {[
           { color: "#10b981", label: "Good (70-100)" },
@@ -222,16 +193,10 @@ export default function MapPage() {
         ))}
       </div>
 
-      {/* Road count */}
-      {roadsLoading ? (
-        <div className="absolute top-20 left-4 bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-400">
-          Loading roads...
-        </div>
-      ) : (
-        <div className="absolute top-20 left-4 bg-slate-900/90 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-400">
-          {roads.length} roads nearby
-        </div>
-      )}
+      {/* Road count badge */}
+      <div className="absolute top-4 left-4 z-[1000] bg-slate-900/95 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-400">
+        {roads.length} roads · {heatmapData.length} complaints nearby
+      </div>
     </div>
   );
 }
