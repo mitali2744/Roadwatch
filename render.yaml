@@ -24,18 +24,16 @@ services:
           name: roadwatch-redis
           type: redis
           property: connectionString
-      - key: OPENAI_API_KEY
-        sync: false          # optional — leave blank if using Groq
       - key: GROQ_API_KEY
-        sync: false          # free at console.groq.com — paste here in Render dashboard
-      - key: MAPBOX_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
         sync: false
       - key: SECRET_KEY
-        generateValue: true  # Render auto-generates a secure value
+        generateValue: true
       - key: ENVIRONMENT
         value: production
       - key: CHROMA_HOST
-        value: localhost      # ChromaDB runs in-process on free tier
+        value: localhost
       - key: FRONTEND_URL
         fromService:
           name: roadwatch-frontend
@@ -70,3 +68,4 @@ services:
     name: roadwatch-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []          # empty = only Render internal services can connect (most secure)
