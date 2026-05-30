@@ -25,9 +25,11 @@ services:
           type: redis
           property: connectionString
       - key: OPENAI_API_KEY
-        sync: false          # you fill this in Render dashboard
+        sync: false          # optional — leave blank if using Groq
+      - key: GROQ_API_KEY
+        sync: false          # free at console.groq.com — paste here in Render dashboard
       - key: MAPBOX_TOKEN
-        sync: false          # you fill this in Render dashboard
+        sync: false
       - key: SECRET_KEY
         generateValue: true  # Render auto-generates a secure value
       - key: ENVIRONMENT

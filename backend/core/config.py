@@ -14,10 +14,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql://roadwatch:roadwatch123@localhost:5432/roadwatch"
     REDIS_URL: str = "redis://localhost:6379"
 
-    # AI
-    OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str = "gpt-4o"
-    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    # AI / LLM
+    OPENAI_API_KEY: str = ""          # optional — only needed if using OpenAI embeddings
+    GROQ_API_KEY: str = ""            # free at console.groq.com
+    OPENAI_MODEL: str = "gpt-4o"      # ignored when using Groq
+    GROQ_MODEL: str = "llama3-70b-8192"  # free Groq model
+    EMBEDDING_MODEL: str = "text-embedding-3-small"  # OpenAI embeddings (or swap below)
 
     # Maps
     MAPBOX_TOKEN: str = ""
