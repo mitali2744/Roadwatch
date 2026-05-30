@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql://roadwatch:roadwatch123@localhost:5432/roadwatch"
-    REDIS_URL: str = "redis://localhost:6379"
+    REDIS_URL: str = ""  # optional — app works without Redis
 
     # AI / LLM
     OPENAI_API_KEY: str = ""          # optional — only needed if using OpenAI embeddings

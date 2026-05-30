@@ -10,8 +10,8 @@ alembic==1.13.1
 psycopg2-binary==2.9.9
 geoalchemy2==0.15.1
 
-# Redis
-redis==5.0.4
+# Redis (optional — app works without it)
+# redis==5.0.4
 
 # AI / LLM — using Groq (free) with LangChain
 langchain==0.2.1
