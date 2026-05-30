@@ -12,7 +12,7 @@ services:
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    plan: free
+    plan: starter
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
@@ -47,7 +47,7 @@ services:
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    plan: free
+    plan: starter
     routes:
       - type: rewrite
         source: /*
@@ -68,4 +68,4 @@ services:
     name: roadwatch-redis
     plan: free
     maxmemoryPolicy: allkeys-lru
-    ipAllowList: []          # empty = only Render internal services can connect (most secure)
+    ipAllowList: []
