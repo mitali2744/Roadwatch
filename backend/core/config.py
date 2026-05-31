@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""          # optional — only needed if using OpenAI embeddings
     GROQ_API_KEY: str = ""            # free at console.groq.com
     OPENAI_MODEL: str = "gpt-4o"      # ignored when using Groq
-    GROQ_MODEL: str = "llama3-70b-8192"  # free Groq model
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"  # current Groq model (llama3-70b-8192 decommissioned)
     EMBEDDING_MODEL: str = "text-embedding-3-small"  # OpenAI embeddings (or swap below)
 
     # Maps — using OpenStreetMap (free, no key needed)
