@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for RoadWatch."""
+"""SQLAlchemy ORM models for RoadWatch — no PostGIS dependency."""
 
 from sqlalchemy import (
     Column, String, Float, Integer, DateTime, Boolean,
@@ -6,7 +6,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
-from geoalchemy2 import Geometry
 import uuid
 import enum
 
@@ -16,12 +15,12 @@ from db.database import Base
 # ── Enums ─────────────────────────────────────────────────────────────────────
 
 class RoadType(str, enum.Enum):
-    NH = "NH"       # National Highway
-    SH = "SH"       # State Highway
-    MDR = "MDR"     # Major District Road
-    ODR = "ODR"     # Other District Road
-    VR = "VR"       # Village Road
-    LOCAL = "LOCAL" # Local/Municipal Road
+    NH = "NH"
+    SH = "SH"
+    MDR = "MDR"
+    ODR = "ODR"
+    VR = "VR"
+    LOCAL = "LOCAL"
     EXPRESSWAY = "EXPRESSWAY"
 
 
@@ -63,7 +62,7 @@ class User(Base):
     name = Column(String(255), nullable=False)
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
-    is_authority = Column(Boolean, default=False)  # Government official
+    is_authority = Column(Boolean, default=False)
     country_code = Column(String(3), default="IN")
     preferred_language = Column(String(10), default="en")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -82,12 +81,11 @@ class Contractor(Base):
     country_code = Column(String(3), default="IN")
     state = Column(String(100))
 
-    # Accountability scorecard (computed)
-    trust_score = Column(Float, default=50.0)          # 0-100
-    on_time_rate = Column(Float, default=0.0)          # %
-    re_complaint_rate = Column(Float, default=0.0)     # % roads re-complained within 6mo
-    budget_adherence = Column(Float, default=0.0)      # % within budget
-    citizen_rating = Column(Float, default=0.0)        # avg 1-5
+    trust_score = Column(Float, default=50.0)
+    on_time_rate = Column(Float, default=0.0)
+    re_complaint_rate = Column(Float, default=0.0)
+    budget_adherence = Column(Float, default=0.0)
+    citizen_rating = Column(Float, default=0.0)
     total_projects = Column(Integer, default=0)
     completed_projects = Column(Integer, default=0)
 
@@ -102,8 +100,8 @@ class Authority(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
-    authority_type = Column(String(100))  # NHAI, PWD, Municipal Corp, etc.
-    jurisdiction_level = Column(String(50))  # national, state, district, local
+    authority_type = Column(String(100))
+    jurisdiction_level = Column(String(50))
     country_code = Column(String(3), default="IN")
     state = Column(String(100))
     district = Column(String(100))
@@ -113,8 +111,11 @@ class Authority(Base):
     executive_engineer_email = Column(String(255))
     executive_engineer_phone = Column(String(20))
 
-    # Geo boundary (polygon)
-    jurisdiction_boundary = Column(Geometry("POLYGON", srid=4326), nullable=True)
+    # Bounding box instead of PostGIS geometry
+    bbox_min_lat = Column(Float, nullable=True)
+    bbox_min_lon = Column(Float, nullable=True)
+    bbox_max_lat = Column(Float, nullable=True)
+    bbox_max_lon = Column(Float, nullable=True)
 
     road_projects = relationship("RoadProject", back_populates="authority")
     complaints = relationship("Complaint", back_populates="routed_authority")
@@ -125,21 +126,21 @@ class RoadSegment(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
-    road_number = Column(String(50))  # e.g., NH-48, SH-12
+    road_number = Column(String(50))
     road_type = Column(Enum(RoadType), nullable=False)
     country_code = Column(String(3), default="IN")
     state = Column(String(100))
     district = Column(String(100))
 
-    # Geometry
-    geometry = Column(Geometry("LINESTRING", srid=4326), nullable=True)
+    # Center point instead of PostGIS linestring
+    center_lat = Column(Float, nullable=True)
+    center_lon = Column(Float, nullable=True)
     length_km = Column(Float)
 
-    # Condition
-    condition_score = Column(Float, default=50.0)  # 0-100 (100=perfect)
+    condition_score = Column(Float, default=50.0)
     last_survey_date = Column(DateTime(timezone=True))
     predicted_failure_date = Column(DateTime(timezone=True), nullable=True)
-    deterioration_risk = Column(String(20), default="LOW")  # LOW/MEDIUM/HIGH
+    deterioration_risk = Column(String(20), default="LOW")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -158,27 +159,23 @@ class RoadProject(Base):
     contractor_id = Column(UUID(as_uuid=True), ForeignKey("contractors.id"))
     authority_id = Column(UUID(as_uuid=True), ForeignKey("authorities.id"))
 
-    # Budget
-    budget_sanctioned = Column(Float, nullable=False)  # in local currency
+    budget_sanctioned = Column(Float, nullable=False)
     budget_spent = Column(Float, default=0.0)
     currency = Column(String(3), default="INR")
 
-    # Timeline
     start_date = Column(DateTime(timezone=True))
     planned_end_date = Column(DateTime(timezone=True))
     actual_end_date = Column(DateTime(timezone=True), nullable=True)
     last_relaying_date = Column(DateTime(timezone=True), nullable=True)
     next_maintenance_date = Column(DateTime(timezone=True), nullable=True)
 
-    # Status
-    status = Column(String(50), default="PLANNED")  # PLANNED/ONGOING/COMPLETED/DELAYED
-    is_anomalous = Column(Boolean, default=False)    # Budget anomaly flag
+    status = Column(String(50), default="PLANNED")
+    is_anomalous = Column(Boolean, default=False)
     anomaly_reason = Column(Text, nullable=True)
 
-    # Metadata
-    data_source = Column(String(255))  # Source of data (govt portal, etc.)
+    data_source = Column(String(255))
     country_code = Column(String(3), default="IN")
-    extra_data = Column(JSON, default={})  # Country-specific fields
+    extra_data = Column(JSON, default={})
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -192,43 +189,34 @@ class Complaint(Base):
     __tablename__ = "complaints"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    ticket_number = Column(String(20), unique=True, nullable=False)  # RW-2026-00001
+    ticket_number = Column(String(20), unique=True, nullable=False)
 
-    # Reporter
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     reporter_name = Column(String(255))
     reporter_phone = Column(String(20))
     reporter_email = Column(String(255))
 
-    # Location
+    # Plain lat/lon — no PostGIS needed
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    location_point = Column(Geometry("POINT", srid=4326))
     address = Column(Text)
     road_segment_id = Column(UUID(as_uuid=True), ForeignKey("road_segments.id"), nullable=True)
 
-    # Issue details
     complaint_type = Column(Enum(ComplaintType), nullable=False)
     description = Column(Text)
-    image_urls = Column(JSON, default=[])  # List of uploaded image URLs
+    image_urls = Column(JSON, default=[])
 
-    # AI Analysis
     ai_severity = Column(Enum(SeverityLevel), nullable=True)
-    ai_confidence = Column(Float, nullable=True)  # 0-1
+    ai_confidence = Column(Float, nullable=True)
     ai_damage_description = Column(Text, nullable=True)
 
-    # Routing
     routed_authority_id = Column(UUID(as_uuid=True), ForeignKey("authorities.id"), nullable=True)
     routing_reason = Column(Text)
 
-    # Status tracking
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING)
-    status_history = Column(JSON, default=[])  # [{status, timestamp, note}]
+    status_history = Column(JSON, default=[])
 
-    # Audit trail (immutable ledger hash)
-    ledger_hash = Column(String(64))  # SHA-256 hash chain
-
-    # Offline support
+    ledger_hash = Column(String(64))
     submitted_offline = Column(Boolean, default=False)
     synced_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -242,13 +230,12 @@ class Complaint(Base):
 
 
 class LedgerEntry(Base):
-    """Immutable audit trail for complaints — tamper-proof chain."""
     __tablename__ = "ledger_entries"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     complaint_id = Column(UUID(as_uuid=True), ForeignKey("complaints.id"), nullable=False)
-    action = Column(String(100), nullable=False)  # SUBMITTED, ROUTED, STATUS_CHANGED, etc.
-    actor = Column(String(255))  # user email or "SYSTEM"
+    action = Column(String(100), nullable=False)
+    actor = Column(String(255))
     data = Column(JSON)
     previous_hash = Column(String(64))
     current_hash = Column(String(64), unique=True)

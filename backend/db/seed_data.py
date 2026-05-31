@@ -111,7 +111,8 @@ async def seed():
                 country_code="IN",
                 condition_score=random.uniform(30, 90),
                 last_survey_date=datetime.utcnow() - timedelta(days=random.randint(30, 365)),
-                geometry=f"SRID=4326;LINESTRING({lon} {lat}, {lon+0.1} {lat+0.05})",
+                center_lat=lat,
+                center_lon=lon,
                 **r_data,
             )
             db.add(seg)
@@ -158,7 +159,6 @@ async def seed():
                 reporter_phone=f"98765{str(i).zfill(5)}",
                 latitude=lat + lat_offset,
                 longitude=lon + lon_offset,
-                location_point=f"SRID=4326;POINT({lon+lon_offset} {lat+lat_offset})",
                 address=f"Near {road_seg.name}, Karnataka",
                 road_segment_id=road_seg.id,
                 complaint_type=random.choice(complaint_types),
