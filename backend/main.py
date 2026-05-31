@@ -23,9 +23,31 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Starting RoadWatch API...")
     await init_db()
     await init_vector_store()
+    # Auto-seed if database is empty
+    await auto_seed()
     logger.info("✅ RoadWatch API ready")
     yield
     logger.info("🛑 Shutting down RoadWatch API...")
+
+
+async def auto_seed():
+    """Seed sample data automatically if the database is empty."""
+    try:
+        from db.database import AsyncSessionLocal
+        from db.models import Contractor
+        from sqlalchemy import select, func
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(func.count()).select_from(Contractor))
+            count = result.scalar()
+            if count == 0:
+                logger.info("📦 Database empty — running auto-seed...")
+                from db.seed_data import seed
+                await seed()
+                logger.info("✅ Auto-seed complete")
+            else:
+                logger.info(f"✅ Database has {count} contractors — skipping seed")
+    except Exception as e:
+        logger.warning(f"⚠️ Auto-seed failed (non-critical): {e}")
 
 
 app = FastAPI(
