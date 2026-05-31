@@ -1,13 +1,9 @@
 """
-Predictive Road Deterioration Model.
-Predicts when a road segment will fail based on:
-- Road age and last repair date
-- Historical complaint frequency
-- Contractor quality score
-- Road type and traffic load estimates
+Predictive Road Deterioration Model — pure Python, no numpy/scikit-learn.
+Predicts when a road segment will fail based on age, complaints, contractor quality.
 """
 
-import numpy as np
+import math
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
