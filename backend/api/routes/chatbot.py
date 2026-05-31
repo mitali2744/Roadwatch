@@ -3,7 +3,7 @@ AI Chatbot API — RAG-powered conversational interface for road queries.
 Supports multilingual responses and jurisdiction-aware answers.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
@@ -12,7 +12,6 @@ import json
 
 from db.database import get_db
 from services.rag.chatbot_chain import get_chatbot_response, stream_chatbot_response
-from services.rag.vector_store import query_vector_store
 
 router = APIRouter()
 
@@ -35,18 +34,7 @@ class ChatResponse(BaseModel):
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
-    """
-    Main chatbot endpoint.
-    Uses RAG over road data, project records, and complaint history.
-    Supports multilingual responses and location-aware context.
-    
-    Example questions:
-    - "Who is responsible for NH-48 near Bangalore?"
-    - "What is the budget for road repairs in my area?"
-    - "How do I report a pothole?"
-    - "What is the status of my complaint RW-2026-ABC123?"
-    - "Which contractor built the road near me?"
-    """
+    """Main chatbot endpoint using RAG + Groq Llama 3."""
     import uuid
     session_id = request.session_id or str(uuid.uuid4())
 
@@ -70,10 +58,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
 
 @router.post("/chat/stream")
 async def chat_stream(request: ChatRequest, db: AsyncSession = Depends(get_db)):
-    """
-    Streaming chatbot endpoint — returns tokens as they are generated.
-    Use for real-time typing effect in the UI.
-    """
+    """Streaming chatbot — returns tokens as they are generated."""
     import uuid
     session_id = request.session_id or str(uuid.uuid4())
 
@@ -98,27 +83,26 @@ async def debug_llm():
     """Debug endpoint — checks if LLM is configured correctly."""
     from core.config import settings
     from services.rag.chatbot_chain import _get_llm
-    
+
     groq_key_set = bool(settings.GROQ_API_KEY)
     groq_key_preview = settings.GROQ_API_KEY[:8] + "..." if settings.GROQ_API_KEY else "NOT SET"
-    
+
     llm_status = "none"
     llm_error = None
-    
+
     if groq_key_set:
         try:
             llm = _get_llm(streaming=False)
             if llm:
-                # Try a real call
                 from langchain.schema import HumanMessage
-                response = await llm.ainvoke([HumanMessage(content="Say 'OK' in one word")])
+                response = await llm.ainvoke([HumanMessage(content="Say OK")])
                 llm_status = f"groq_working: {response.content[:50]}"
             else:
                 llm_status = "llm_object_is_none"
         except Exception as e:
             llm_status = "groq_error"
             llm_error = str(e)
-    
+
     return {
         "groq_key_set": groq_key_set,
         "groq_key_preview": groq_key_preview,
@@ -126,26 +110,23 @@ async def debug_llm():
         "llm_status": llm_status,
         "llm_error": llm_error,
     }
-    country_code: str = "IN",
-    language: str = "en",
-):
+
+
+@router.get("/suggestions")
+async def get_suggestions(country_code: str = "IN", language: str = "en"):
     """Returns suggested questions for the chatbot UI."""
     suggestions = {
         "en": [
             "Who is responsible for the road near me?",
             "What is the budget for road repairs in my area?",
             "How do I report a pothole?",
-            "Show me contractor details for NH-48",
             "Which roads are predicted to deteriorate soon?",
-            "What is the status of complaint RW-2026-XXXXX?",
             "Show me budget anomalies in my district",
-            "How transparent is road spending in my state?",
         ],
         "hi": [
             "मेरे पास की सड़क के लिए कौन जिम्मेदार है?",
             "मेरे क्षेत्र में सड़क मरम्मत का बजट क्या है?",
             "गड्ढे की शिकायत कैसे करें?",
-            "NH-48 के ठेकेदार का विवरण दिखाएं",
         ],
     }
     return {"suggestions": suggestions.get(language, suggestions["en"])}
