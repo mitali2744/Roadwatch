@@ -10,13 +10,17 @@ alembic==1.13.1
 psycopg2-binary==2.9.9
 geoalchemy2==0.15.1
 
-# AI / LLM — pure Python, no compilation
+# AI / LLM
 langchain==0.2.1
 langchain-openai==0.1.8
 langchain-community==0.2.1
 langchain-groq==0.1.5
 openai==1.30.1
 chromadb==0.5.0
+tiktoken==0.7.0
+
+# Image Processing
+Pillow==10.3.0
 
 # Voice
 gtts==2.5.1

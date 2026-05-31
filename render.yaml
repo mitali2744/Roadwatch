@@ -5,14 +5,13 @@ databases:
     plan: free
 
 services:
-  # ── Backend (FastAPI) ──────────────────────────────────────────────────────
+  # ── Backend (FastAPI via Docker) ───────────────────────────────────────────
   - type: web
     name: roadwatch-api
-    runtime: python
+    runtime: docker
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    plan: starter
+    dockerfilePath: ./Dockerfile
+    plan: free
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
@@ -42,7 +41,7 @@ services:
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    plan: starter
+    plan: free
     routes:
       - type: rewrite
         source: /*
