@@ -10,10 +10,7 @@ alembic==1.13.1
 psycopg2-binary==2.9.9
 geoalchemy2==0.15.1
 
-# Redis (optional — app works without it)
-# redis==5.0.4
-
-# AI / LLM — using Groq (free) with LangChain
+# AI / LLM
 langchain==0.2.1
 langchain-openai==0.1.8
 langchain-community==0.2.1
@@ -22,19 +19,17 @@ openai==1.30.1
 chromadb==0.5.0
 tiktoken==0.7.0
 
-# ML
-scikit-learn==1.5.0
+# ML — pre-built wheels for Python 3.11
+scikit-learn==1.4.2
 numpy==1.26.4
-pandas==2.2.2
+pandas==2.2.1
 joblib==1.4.2
 
-# Image Processing (Severity Scorer)
+# Image Processing
 Pillow==10.3.0
 opencv-python-headless==4.9.0.80
 
-# Voice / Speech
-# openai-whisper is large (~1GB) — loaded on-demand only
-# Install separately if needed: pip install openai-whisper
+# Voice
 gtts==2.5.1
 
 # Geo
