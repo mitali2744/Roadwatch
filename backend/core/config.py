@@ -29,15 +29,13 @@ class Settings(BaseSettings):
     CHROMA_PORT: int = 8001
     CHROMA_COLLECTION: str = "roadwatch_docs"
 
-    # CORS — add your Vercel URL here after deploying frontend
+    # CORS — allow all Render subdomains and localhost
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
-        "https://*.vercel.app",
     ]
-
-    # Vercel frontend URL (set this env var on Render after deploying frontend)
+    ALLOWED_ORIGIN_REGEX: str = r"https://.*\.onrender\.com"
     FRONTEND_URL: str = ""
 
     # File uploads
