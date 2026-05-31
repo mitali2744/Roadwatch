@@ -93,8 +93,39 @@ async def chat_stream(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     return StreamingResponse(generate(), media_type="text/event-stream")
 
 
-@router.get("/suggestions")
-async def get_suggestions(
+@router.get("/debug")
+async def debug_llm():
+    """Debug endpoint — checks if LLM is configured correctly."""
+    from core.config import settings
+    from services.rag.chatbot_chain import _get_llm
+    
+    groq_key_set = bool(settings.GROQ_API_KEY)
+    groq_key_preview = settings.GROQ_API_KEY[:8] + "..." if settings.GROQ_API_KEY else "NOT SET"
+    
+    llm_status = "none"
+    llm_error = None
+    
+    if groq_key_set:
+        try:
+            llm = _get_llm(streaming=False)
+            if llm:
+                # Try a real call
+                from langchain.schema import HumanMessage
+                response = await llm.ainvoke([HumanMessage(content="Say 'OK' in one word")])
+                llm_status = f"groq_working: {response.content[:50]}"
+            else:
+                llm_status = "llm_object_is_none"
+        except Exception as e:
+            llm_status = "groq_error"
+            llm_error = str(e)
+    
+    return {
+        "groq_key_set": groq_key_set,
+        "groq_key_preview": groq_key_preview,
+        "groq_model": settings.GROQ_MODEL,
+        "llm_status": llm_status,
+        "llm_error": llm_error,
+    }
     country_code: str = "IN",
     language: str = "en",
 ):
