@@ -1,263 +1,271 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Map, AlertTriangle, BarChart3, MessageSquare,
   Search, ArrowRight, Globe, Shield, Zap, TrendingDown,
-  ChevronDown, Instagram, Twitter
+  ChevronDown, Instagram, Twitter, ChevronRight
 } from "lucide-react";
 
-const LG_STYLE = `
-  .lg {
-    background: rgba(255,255,255,0.01);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
-    position: relative;
-    overflow: hidden;
-  }
-  .lg::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1.4px;
-    background: linear-gradient(180deg,
-      rgba(255,255,255,0.45) 0%,
-      rgba(255,255,255,0.15) 20%,
-      rgba(255,255,255,0)    40%,
-      rgba(255,255,255,0)    60%,
-      rgba(255,255,255,0.15) 80%,
-      rgba(255,255,255,0.45) 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-`;
-
 export default function HomePage() {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const animRef = useRef<number | null>(null);
-  const fadingRef = useRef(false);
+  const testimonialRef = useRef<HTMLDivElement>(null);
 
-  // Scroll parallax
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
+
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, -200]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const dashY = useTransform(scrollYProgress, [0, 1], [0, -250]);
 
-  // Video fade system
-  const cancelAnim = () => { if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; } };
-  const fadeIn = (v: HTMLVideoElement) => {
-    cancelAnim(); fadingRef.current = false;
-    const start = performance.now(), from = parseFloat(v.style.opacity || "0");
-    const step = (now: number) => {
-      const t = Math.min((now - start) / 600, 1);
-      v.style.opacity = String(from + (1 - from) * t);
-      if (t < 1) animRef.current = requestAnimationFrame(step);
-    };
-    animRef.current = requestAnimationFrame(step);
-  };
-  const fadeOut = (v: HTMLVideoElement, cb: () => void) => {
-    cancelAnim(); fadingRef.current = true;
-    const start = performance.now(), from = parseFloat(v.style.opacity || "1");
-    const step = (now: number) => {
-      const t = Math.min((now - start) / 600, 1);
-      v.style.opacity = String(from * (1 - t));
-      if (t < 1) animRef.current = requestAnimationFrame(step);
-      else { fadingRef.current = false; cb(); }
-    };
-    animRef.current = requestAnimationFrame(step);
-  };
-
-  useEffect(() => {
-    const v = videoRef.current; if (!v) return;
-    v.style.opacity = "0";
-    const onCanPlay = () => fadeIn(v);
-    const onTimeUpdate = () => { if (v.duration && v.duration - v.currentTime <= 0.6 && !fadingRef.current) fadeOut(v, () => {}); };
-    const onEnded = () => { v.style.opacity = "0"; setTimeout(() => { v.currentTime = 0; v.play().then(() => fadeIn(v)).catch(() => {}); }, 100); };
-    v.addEventListener("canplay", onCanPlay);
-    v.addEventListener("timeupdate", onTimeUpdate);
-    v.addEventListener("ended", onEnded);
-    return () => { cancelAnim(); v.removeEventListener("canplay", onCanPlay); v.removeEventListener("timeupdate", onTimeUpdate); v.removeEventListener("ended", onEnded); };
-  }, []);
+  const WORDS = "RoadWatch helps citizens track road quality, budgets, and complaints with AI-powered precision and full transparency.".split(" ");
+  const { scrollYProgress: tScroll } = useScroll({
+    target: testimonialRef,
+    offset: ["start end", "end center"],
+  });
 
   return (
     <>
-      <style>{LG_STYLE}</style>
+      <style>{`
+        :root {
+          --background: 0 0% 0%;
+          --foreground: 0 0% 100%;
+          --muted-foreground: 0 0% 65%;
+          --card: 0 0% 5%;
+          --border: 0 0% 20%;
+          --hero-subtitle: hsl(210 17% 95%);
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
+        .liquid-glass {
+          background: rgba(255,255,255,0.01);
+          background-blend-mode: luminosity;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          border: none;
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+          position: relative;
+          overflow: hidden;
+        }
+        .liquid-glass::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          padding: 1.4px;
+          background: linear-gradient(180deg,
+            rgba(255,255,255,0.45) 0%,
+            rgba(255,255,255,0.15) 20%,
+            rgba(255,255,255,0) 40%,
+            rgba(255,255,255,0) 60%,
+            rgba(255,255,255,0.15) 80%,
+            rgba(255,255,255,0.45) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+      `}</style>
 
-      <div className="bg-black text-white overflow-x-hidden">
+      <div style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))", fontFamily: "'Inter', sans-serif" }}>
 
         {/* ══ SECTION 1: HERO ══════════════════════════════════════════════ */}
-        <section ref={sectionRef} className="relative min-h-screen overflow-hidden flex flex-col">
+        <section ref={sectionRef} className="relative min-h-screen overflow-hidden">
 
-          {/* Background video */}
-          <video ref={videoRef} src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4"
-            autoPlay muted playsInline loop={false}
-            className="absolute inset-0 w-full h-full object-cover translate-y-[17%]"
-            style={{ opacity: 0, zIndex: 0 }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.85) 100%)", zIndex: 1 }} />
-
-          {/* Navbar */}
-          <nav className="relative px-8 md:px-16 py-5" style={{ zIndex: 20 }}>
-            <div className="lg rounded-full px-6 py-3 flex items-center justify-between max-w-5xl mx-auto">
-              <div className="flex items-center gap-10">
-                <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight text-white">
-                  <Globe size={20} /> RoadWatch
-                </Link>
-                <div className="hidden md:flex items-center gap-1">
-                  {[{l:"Map",t:"/map"},{l:"Dashboard",t:"/dashboard"},{l:"AI Chat",t:"/chat"},{l:"Track",t:"/track"}].map(({l,t})=>(
-                    <Link key={t} to={t} className="px-3 py-1.5 text-sm font-medium text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5">{l}</Link>
-                  ))}
-                </div>
-              </div>
-              <Link to="/report" className="lg rounded-full px-6 py-2 text-white text-sm font-medium hover:bg-white/5 transition-colors flex items-center gap-2">
-                <AlertTriangle size={14} /> Report Issue
+          {/* ── Navbar ── */}
+          <nav className="relative z-50 flex items-center justify-between px-8 md:px-28 py-4">
+            {/* Left */}
+            <div className="flex items-center" style={{ gap: "3rem" }}>
+              <Link to="/" className="flex items-center gap-2" style={{ fontWeight: 700, fontSize: "1.25rem", letterSpacing: "-0.02em", color: "white", textDecoration: "none" }}>
+                <Globe size={22} />
+                RoadWatch
               </Link>
+              <div className="hidden md:flex items-center" style={{ gap: "4px" }}>
+                {[
+                  { label: "Home", to: "/" },
+                  { label: "Map", to: "/map" },
+                  { label: "Dashboard", to: "/dashboard" },
+                  { label: "Track", to: "/track" },
+                ].map(({ label, to }) => (
+                  <Link key={to} to={to}
+                    style={{ padding: "6px 12px", borderRadius: "8px", fontSize: "14px", fontWeight: 500, color: "hsl(var(--muted-foreground))", textDecoration: "none", transition: "color 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "white")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "hsl(var(--muted-foreground))")}>
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </div>
+            {/* Right */}
+            <Link to="/report"
+              style={{ background: "hsl(var(--foreground))", color: "hsl(var(--background))", borderRadius: "8px", padding: "8px 20px", fontSize: "14px", fontWeight: 600, textDecoration: "none", transition: "opacity 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+              Report Issue
+            </Link>
           </nav>
 
-          {/* Hero content — fully centered */}
-          <motion.div
-            style={{ y: heroY, opacity: heroOpacity }}
-            className="relative flex-1 flex flex-col items-center justify-center text-center px-6 pb-16"
-            style2={{ zIndex: 10 }}
-          >
-            {/* Badge */}
+          {/* ── Hero Content ── */}
+          <motion.div style={{ y: heroY, opacity: heroOpacity }}
+            className="relative z-10 flex flex-col items-center text-center px-4"
+            style2={{ marginTop: "5rem" }}>
+
+            {/* Tag pill */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="lg rounded-lg px-3 py-2 inline-flex items-center gap-2 mb-6">
-              <span className="bg-white text-black text-xs font-semibold px-2 py-0.5 rounded-md">New</span>
-              <span className="text-sm font-medium text-white/60">Road Safety Hackathon 2026 · CoERS, IIT Madras</span>
+              className="liquid-glass inline-flex items-center gap-2 mb-6"
+              style={{ borderRadius: "8px", padding: "8px 12px" }}>
+              <span style={{ background: "white", color: "black", borderRadius: "6px", fontSize: "14px", fontWeight: 500, padding: "2px 8px" }}>New</span>
+              <span style={{ fontSize: "14px", fontWeight: 500, color: "hsl(var(--muted-foreground))" }}>Road Safety Hackathon 2026 · CoERS, IIT Madras</span>
             </motion.div>
 
             {/* Title */}
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl md:text-7xl font-medium tracking-tight leading-tight mb-3"
-              style={{ letterSpacing: "-2px" }}>
+              style={{ fontSize: "clamp(2.5rem, 7vw, 4.5rem)", fontWeight: 500, letterSpacing: "-2px", lineHeight: 1.15, marginBottom: "12px", color: "white" }}>
               Your Roads.<br />
+              One Clear{" "}
               <span style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400 }}>
-                One Clear Overview.
+                Overview.
               </span>
             </motion.h1>
 
             {/* Subtitle */}
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg font-normal leading-6 mb-8 max-w-lg"
-              style={{ color: "hsl(210 17% 85%)", opacity: 0.9 }}>
-              RoadWatch helps citizens track road quality, budgets, and complaints<br />
-              with AI-powered precision.
+              style={{ fontSize: "18px", fontWeight: 400, lineHeight: "1.5", opacity: 0.9, marginBottom: "32px", color: "var(--hero-subtitle)", maxWidth: "480px" }}>
+              RoadWatch helps citizens track road quality, budgets,<br />
+              and complaints with AI-powered precision.
             </motion.p>
-
-            {/* Search bar */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.25 }}
-              className="lg rounded-full pl-6 pr-2 py-2 flex items-center gap-3 w-full max-w-md mb-4">
-              <Search size={16} className="text-white/30 shrink-0" />
-              <input type="text" placeholder="Search road, contractor, complaint..."
-                className="flex-1 bg-transparent text-white placeholder:text-white/30 text-sm outline-none"
-                onKeyDown={e => { if (e.key === "Enter") window.location.href = "/map"; }} />
-              <Link to="/map" className="bg-white rounded-full p-2.5 text-black hover:bg-white/90 transition-colors shrink-0">
-                <ArrowRight size={18} />
-              </Link>
-            </motion.div>
 
             {/* CTA */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap items-center justify-center gap-3 mb-8">
+              className="flex flex-wrap items-center justify-center gap-3 mb-4">
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                <Link to="/map" className="bg-white text-black rounded-full px-8 py-3.5 text-base font-medium flex items-center gap-2 hover:bg-white/90 transition-colors">
-                  <Map size={16} /> Get Started
+                <Link to="/map"
+                  style={{ background: "hsl(var(--foreground))", color: "hsl(var(--background))", borderRadius: "9999px", padding: "14px 32px", fontSize: "16px", fontWeight: 500, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                  <Map size={16} /> Get Started for Free
                 </Link>
               </motion.div>
-              <Link to="/dashboard" className="lg rounded-full px-8 py-3.5 text-white text-base font-medium hover:bg-white/5 transition-colors flex items-center gap-2">
+              <Link to="/dashboard"
+                className="liquid-glass"
+                style={{ borderRadius: "9999px", padding: "14px 32px", fontSize: "16px", fontWeight: 500, color: "white", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}>
                 <BarChart3 size={16} /> Dashboard
               </Link>
             </motion.div>
 
             {/* Feature pills */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }}
-              className="flex flex-wrap justify-center gap-2">
+              className="flex flex-wrap justify-center gap-2 mb-12">
               {[
                 { icon: Zap, label: "AI Severity Scoring" },
                 { icon: TrendingDown, label: "Predictive ML" },
                 { icon: Shield, label: "Audit Ledger" },
                 { icon: AlertTriangle, label: "Budget Anomaly" },
               ].map(({ icon: Icon, label }) => (
-                <div key={label} className="lg rounded-full px-3 py-1.5 text-white/40 text-xs flex items-center gap-1.5">
-                  <Icon size={11} className="text-white/25" /> {label}
+                <div key={label} className="liquid-glass"
+                  style={{ borderRadius: "9999px", padding: "6px 12px", fontSize: "12px", color: "hsl(var(--muted-foreground))", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <Icon size={11} style={{ opacity: 0.5 }} /> {label}
                 </div>
               ))}
             </motion.div>
           </motion.div>
 
-          {/* Scroll hint */}
-          <div className="relative flex justify-center pb-8" style={{ zIndex: 10 }}>
-            <ChevronDown size={20} className="animate-bounce text-white/30" />
-          </div>
+          {/* ── Dashboard + Video Area ── */}
+          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }}
+            style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", aspectRatio: "16/9", position: "relative" }}>
+
+            {/* Background video */}
+            <video
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260307_083826_e938b29f-a43a-41ec-a153-3d4730578ab8.mp4"
+              autoPlay muted playsInline loop
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            />
+
+            {/* Dashboard image overlay with parallax */}
+            <motion.div style={{ y: dashY, position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>
+              <div style={{ maxWidth: "64rem", width: "90%", borderRadius: "16px", overflow: "hidden", mixBlendMode: "luminosity", background: "rgba(255,255,255,0.05)", aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "14px", textAlign: "center", padding: "40px" }}>
+                  <BarChart3 size={48} style={{ margin: "0 auto 12px", opacity: 0.3 }} />
+                  <div>RoadWatch Dashboard Preview</div>
+                  <div style={{ fontSize: "12px", marginTop: "4px", opacity: 0.5 }}>Live data from your region</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Bottom gradient fade */}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "160px", background: "linear-gradient(to top, hsl(var(--background)), transparent)", zIndex: 30, pointerEvents: "none" }} />
+          </motion.div>
         </section>
 
-        {/* ══ SECTION 2: STATS ═════════════════════════════════════════════ */}
-        <section className="py-24 px-8 md:px-16" style={{ background: "#000" }}>
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { value: "10K+", label: "Roads Monitored" },
-                { value: "85%", label: "Complaints Resolved" },
-                { value: "₹500Cr+", label: "Budget Tracked" },
-                { value: "7+", label: "Languages Supported" },
-              ].map(({ value, label }, i) => (
-                <motion.div key={label}
-                  initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }} viewport={{ once: true }}
-                  className="lg rounded-2xl p-6 text-center">
-                  <div className="text-3xl font-bold text-white mb-1"
-                    style={{ fontFamily: "'Instrument Serif', serif" }}>{value}</div>
-                  <div className="text-sm text-white/40">{label}</div>
-                </motion.div>
-              ))}
+        {/* ══ SECTION 2: TESTIMONIAL (word reveal) ═════════════════════════ */}
+        <section ref={testimonialRef} style={{ minHeight: "100vh", display: "flex", alignItems: "center", padding: "6rem 2rem 8rem", background: "hsl(var(--background))" }}>
+          <div style={{ maxWidth: "48rem", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2.5rem" }}>
+
+            {/* Quote icon */}
+            <div style={{ fontSize: "4rem", lineHeight: 1, color: "hsl(var(--muted-foreground))", fontFamily: "'Instrument Serif', serif" }}>"</div>
+
+            {/* Word-reveal testimonial */}
+            <div style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)", fontWeight: 500, lineHeight: 1.2, display: "flex", flexWrap: "wrap" }}>
+              {WORDS.map((word, i) => {
+                const start = i / WORDS.length;
+                const end = (i + 1) / WORDS.length;
+                const wordOpacity = useTransform(tScroll, [start, end], [0.2, 1]);
+                const wordColor = useTransform(tScroll, [start, end], ["hsl(0 0% 35%)", "hsl(0 0% 100%)"]);
+                return (
+                  <motion.span key={i} style={{ marginRight: "0.3em", opacity: wordOpacity, color: wordColor }}>
+                    {word}
+                  </motion.span>
+                );
+              })}
+              <span style={{ color: "hsl(var(--muted-foreground))", marginLeft: "8px" }}>"</span>
+            </div>
+
+            {/* Author */}
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div style={{ width: "56px", height: "56px", borderRadius: "9999px", border: "3px solid white", background: "hsl(0 0% 20%)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <Globe size={24} style={{ color: "hsl(var(--muted-foreground))" }} />
+              </div>
+              <div>
+                <div style={{ fontSize: "16px", fontWeight: 600, lineHeight: "1.75", color: "white" }}>Citizen Reporter</div>
+                <div style={{ fontSize: "14px", fontWeight: 400, lineHeight: "1.25", color: "hsl(var(--muted-foreground))" }}>Road Safety Advocate</div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ══ SECTION 3: FEATURES ══════════════════════════════════════════ */}
-        <section className="py-24 px-8 md:px-16" style={{ background: "#000" }}>
-          <div className="max-w-5xl mx-auto">
+        <section style={{ padding: "6rem 2rem 8rem", background: "hsl(var(--background))" }}>
+          <div style={{ maxWidth: "64rem", margin: "0 auto" }}>
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }} viewport={{ once: true }} className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4"
-                style={{ letterSpacing: "-1px" }}>
-                Everything you need for{" "}
+              transition={{ duration: 0.6 }} viewport={{ once: true }} style={{ textAlign: "center", marginBottom: "4rem" }}>
+              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 500, letterSpacing: "-1px", marginBottom: "16px", color: "white" }}>
+                Everything for{" "}
                 <span style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400 }}>
                   road transparency
                 </span>
               </h2>
-              <p className="text-white/40 text-lg max-w-xl mx-auto">
-                One platform. Full accountability. Powered by AI.
-              </p>
+              <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "18px" }}>One platform. Full accountability. Powered by AI.</p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
               {[
                 { icon: Map, title: "Live Road Map", desc: "Interactive map with road conditions, complaint heatmap, and project markers", to: "/map" },
                 { icon: AlertTriangle, title: "Smart Complaints", desc: "GPS + photo upload. AI scores severity and auto-routes to correct authority", to: "/report" },
                 { icon: MessageSquare, title: "AI Assistant", desc: "Ask anything about roads, budgets, contractors in 7+ languages", to: "/chat" },
                 { icon: BarChart3, title: "Transparency Dashboard", desc: "Budget vs spend, contractor scorecards, anomaly detection", to: "/dashboard" },
                 { icon: Search, title: "Complaint Tracker", desc: "Real-time status with tamper-proof SHA-256 audit trail", to: "/track" },
-                { icon: Shield, title: "Audit Ledger", desc: "Every action recorded in an immutable hash chain — tamper-proof", to: "/dashboard" },
+                { icon: Shield, title: "Audit Ledger", desc: "Every action recorded in an immutable hash chain", to: "/dashboard" },
               ].map(({ icon: Icon, title, desc, to }, i) => (
                 <motion.div key={title}
                   initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.08 }} viewport={{ once: true }}>
-                  <Link to={to} className="lg rounded-2xl p-6 block group hover:bg-white/3 transition-all h-full">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                      <Icon size={18} className="text-white/60 group-hover:text-white transition-colors" />
+                  <Link to={to} style={{ display: "block", background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "16px", padding: "24px", textDecoration: "none", transition: "border-color 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)")}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = "hsl(var(--border))")}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
+                      <Icon size={18} style={{ color: "hsl(var(--muted-foreground))" }} />
                     </div>
-                    <h3 className="font-semibold text-white mb-2">{title}</h3>
-                    <p className="text-sm text-white/40 leading-relaxed">{desc}</p>
+                    <div style={{ fontWeight: 600, color: "white", marginBottom: "8px" }}>{title}</div>
+                    <div style={{ fontSize: "14px", color: "hsl(var(--muted-foreground))", lineHeight: "1.5" }}>{desc}</div>
                   </Link>
                 </motion.div>
               ))}
@@ -266,17 +274,22 @@ export default function HomePage() {
         </section>
 
         {/* ══ FOOTER ═══════════════════════════════════════════════════════ */}
-        <footer className="py-12 px-8 md:px-16 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-          <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2 font-bold text-white">
+        <footer style={{ padding: "3rem 2rem", borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--background))" }}>
+          <div style={{ maxWidth: "64rem", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "24px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 700, color: "white" }}>
               <Globe size={18} /> RoadWatch
             </div>
-            <p className="text-xs text-white/30 text-center">
+            <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", textAlign: "center" }}>
               Road Safety Hackathon 2026 · CoERS, RBG Labs, IIT Madras
             </p>
-            <div className="flex items-center gap-3">
-              <button aria-label="Instagram" className="lg rounded-full p-3 text-white/40 hover:text-white transition-colors"><Instagram size={16} /></button>
-              <button aria-label="Twitter" className="lg rounded-full p-3 text-white/40 hover:text-white transition-colors"><Twitter size={16} /></button>
+            <div style={{ display: "flex", gap: "12px" }}>
+              {[Instagram, Twitter].map((Icon, i) => (
+                <button key={i} className="liquid-glass" style={{ borderRadius: "9999px", padding: "12px", color: "hsl(var(--muted-foreground))", border: "none", cursor: "pointer", transition: "color 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "white")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "hsl(var(--muted-foreground))")}>
+                  <Icon size={16} />
+                </button>
+              ))}
             </div>
           </div>
         </footer>
