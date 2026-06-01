@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
@@ -30,6 +30,38 @@ export default function HomePage() {
     const step = (now: number) => { const t = Math.min((now - start) / 600, 1); v.style.opacity = String(from * (1 - t)); if (t < 1) animRef.current = requestAnimationFrame(step); else { fadingRef.current = false; cb(); } };
     animRef.current = requestAnimationFrame(step);
   };
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    const onCanPlay = () => { fadeIn(v); };
+    const onTimeUpdate = () => {
+      const remain = v.duration - v.currentTime;
+      if (remain <= 0.55 && !fadingRef.current) {
+        fadeOut(v, () => {
+          v.currentTime = 0;
+          v.play().catch(() => {});
+          fadeIn(v);
+        });
+      }
+    };
+    const onEnded = () => {
+      v.style.opacity = "0";
+      setTimeout(() => { v.currentTime = 0; v.play().catch(() => {}); fadeIn(v); }, 100);
+    };
+
+    v.addEventListener("canplay", onCanPlay);
+    v.addEventListener("timeupdate", onTimeUpdate);
+    v.addEventListener("ended", onEnded);
+
+    return () => {
+      v.removeEventListener("canplay", onCanPlay);
+      v.removeEventListener("timeupdate", onTimeUpdate);
+      v.removeEventListener("ended", onEnded);
+      cancelAnim();
+    };
+  }, []);
 
   return (
     <>
