@@ -51,13 +51,6 @@ class ComplaintType(str, enum.Enum):
     OTHER = "OTHER"
 
 
-class UserRole(str, enum.Enum):
-    CITIZEN = "CITIZEN"
-    CONTRACTOR = "CONTRACTOR"
-    ADMIN = "ADMIN"
-    AUTHORITY = "AUTHORITY"
-
-
 # ── Models ────────────────────────────────────────────────────────────────────
 
 class User(Base):
@@ -70,13 +63,11 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     is_authority = Column(Boolean, default=False)
-    role = Column(Enum(UserRole), default=UserRole.CITIZEN)
     country_code = Column(String(3), default="IN")
     preferred_language = Column(String(10), default="en")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     complaints = relationship("Complaint", back_populates="user")
-    work_updates = relationship("WorkUpdate", back_populates="updated_by_user")
 
 
 class Contractor(Base):
@@ -120,7 +111,6 @@ class Authority(Base):
     executive_engineer_email = Column(String(255))
     executive_engineer_phone = Column(String(20))
 
-    # Bounding box instead of PostGIS geometry
     bbox_min_lat = Column(Float, nullable=True)
     bbox_min_lon = Column(Float, nullable=True)
     bbox_max_lat = Column(Float, nullable=True)
@@ -141,7 +131,6 @@ class RoadSegment(Base):
     state = Column(String(100))
     district = Column(String(100))
 
-    # Center point instead of PostGIS linestring
     center_lat = Column(Float, nullable=True)
     center_lon = Column(Float, nullable=True)
     length_km = Column(Float)
@@ -205,7 +194,6 @@ class Complaint(Base):
     reporter_phone = Column(String(20))
     reporter_email = Column(String(255))
 
-    # Plain lat/lon — no PostGIS needed
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     address = Column(Text)
@@ -225,16 +213,13 @@ class Complaint(Base):
     status = Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING)
     status_history = Column(JSON, default=[])
 
-    progress_percentage = Column(Integer, default=0)
-    assigned_contractor_id = Column(UUID(as_uuid=True), ForeignKey("contractors.id"), nullable=True)
+    # Work progress — updated by admin
+    work_progress = Column(Integer, default=0)
+    work_updates_json = Column(JSON, default=[])  # [{progress, note, actor, timestamp}]
 
     ledger_hash = Column(String(64))
     submitted_offline = Column(Boolean, default=False)
     synced_at = Column(DateTime(timezone=True), nullable=True)
-
-    # Work progress (0-100%) — updated by admin/authority
-    work_progress = Column(Integer, default=0)
-    work_updates = Column(JSON, default=[])  # [{progress, note, actor, timestamp}]
 
     country_code = Column(String(3), default="IN")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -243,24 +228,6 @@ class Complaint(Base):
     user = relationship("User", back_populates="complaints")
     road_segment = relationship("RoadSegment", back_populates="complaints")
     routed_authority = relationship("Authority", back_populates="complaints")
-    assigned_contractor = relationship("Contractor")
-    work_updates = relationship("WorkUpdate", back_populates="complaint")
-
-
-class WorkUpdate(Base):
-    __tablename__ = "work_updates"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    complaint_id = Column(UUID(as_uuid=True), ForeignKey("complaints.id"), nullable=False)
-    updated_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    progress_percentage = Column(Integer, nullable=False)
-    update_note = Column(Text, nullable=True)
-    before_image_url = Column(String(500), nullable=True)
-    after_image_url = Column(String(500), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    complaint = relationship("Complaint", back_populates="work_updates")
-    updated_by_user = relationship("User", back_populates="work_updates")
 
 
 class LedgerEntry(Base):

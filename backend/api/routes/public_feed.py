@@ -74,7 +74,7 @@ async def get_public_feed(
             "ai_severity": str(c.ai_severity) if c.ai_severity else None,
             "image_urls": c.image_urls or [],
             "work_progress": c.work_progress if hasattr(c, "work_progress") else 0,
-            "work_updates": c.work_updates if hasattr(c, "work_updates") else [],
+            "work_updates": c.work_updates_json if hasattr(c, "work_updates") else [],
             "routed_to": authority_name,
             "submitted_at": c.created_at,
             "updated_at": c.updated_at,
@@ -165,7 +165,7 @@ async def update_work_progress(
         "actor": actor,
         "timestamp": datetime.utcnow().isoformat(),
     })
-    complaint.work_updates = work_updates
+    complaint.work_updates_json = work_updates
 
     # Update status if provided
     if new_status:
