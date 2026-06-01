@@ -153,20 +153,24 @@ export default function ComplaintPage() {
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
           className="text-center mb-10">
           <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity }}
-            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5"
-            style={{ background: `${selectedType?.color || "#38bdf8"}20`, border: `1px solid ${selectedType?.color || "#38bdf8"}40`, boxShadow: `0 0 30px ${selectedType?.color || "#38bdf8"}20`, transition: "all 0.5s ease" }}>
-            <AlertTriangle size={24} style={{ color: selectedType?.color || "#38bdf8" }} />
-          </motion.div>
-          <h1 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 500, letterSpacing: "-1.5px", marginBottom: "8px" }}>
-            Report{" "}
-            <span style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400, background: `linear-gradient(135deg, ${selectedType?.color || "#38bdf8"}, #a78bfa)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", transition: "all 0.5s ease" }}>
-              Road Issue
-            </span>
-          </h1>
+              className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5"
+              style={{ background: `${selectedType?.color || "#38bdf8"}20`, border: `1px solid ${selectedType?.color || "#38bdf8"}40`, boxShadow: `0 0 30px ${selectedType?.color || "#38bdf8"}20`, transition: "all 0.5s ease" }}>
+              <AlertTriangle size={24} style={{ color: selectedType?.color || "#38bdf8" }} />
+            </motion.div>
+            <div className="mb-3 inline-block px-3 py-1 rounded-full text-xs font-semibold" style={{ background: "linear-gradient(90deg,#38bdf8,#a78bfa)", color: "black" }}>
+              Report
+            </div>
+            <h1 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 500, letterSpacing: "-1.5px", marginBottom: "8px" }}>
+              Report{" "}
+              <span style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400, background: `linear-gradient(135deg, ${selectedType?.color || "#38bdf8"}, #a78bfa)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", transition: "all 0.5s ease" }}>
+                Road Issue
+              </span>
+            </h1>
+            <motion.a href="#how-it-works" whileHover={{ scale: 1.02 }} className="inline-block text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>How it works →</motion.a>
           <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "15px" }}>AI will analyze your photos and auto-route to the right authority</p>
         </motion.div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 liquid-glass p-6 rounded-3xl" aria-label="Report road issue form">
 
           {/* Issue type */}
           <TiltCard>

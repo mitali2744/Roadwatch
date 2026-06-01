@@ -82,11 +82,12 @@ export default function TrackPage() {
     <div className="md:ml-16 min-h-screen relative" style={{ background: "#000", color: "#fff", fontFamily: "'Inter', sans-serif" }}>
       <GridBackground />
 
-      <div className="relative z-10 px-6 md:px-16 py-16 max-w-3xl mx-auto">
+      <div className="relative z-10 px-6 md:px-16 py-16 max-w-3xl mx-auto liquid-glass p-6 rounded-3xl">
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
           className="text-center mb-12">
+          <div className="mb-3 inline-block px-3 py-1 rounded-full text-xs font-semibold" style={{ background: "linear-gradient(90deg,#38bdf8,#a78bfa)", color: "black" }}>Track</div>
           {/* Floating icon */}
           <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"

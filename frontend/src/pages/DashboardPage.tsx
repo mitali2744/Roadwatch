@@ -95,11 +95,12 @@ export default function DashboardPage() {
     <div className="md:ml-16 min-h-screen relative" style={{ background: "#000", color: "#fff", fontFamily: "'Inter', sans-serif" }}>
       <Particles />
 
-      <div className="relative z-10 px-6 md:px-12 py-10 max-w-7xl mx-auto">
+      <div className="relative z-10 px-6 md:px-12 py-10 max-w-7xl mx-auto liquid-glass p-6 rounded-3xl">
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
           className="flex items-center justify-between mb-10">
+          <div className="mb-3 inline-block px-3 py-1 rounded-full text-xs font-semibold" style={{ background: "linear-gradient(90deg,#38bdf8,#a78bfa)", color: "black" }}>Dashboard</div>
           <div>
             <h1 style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontWeight: 500, letterSpacing: "-1.5px", marginBottom: "6px" }}>
               Transparency{" "}
