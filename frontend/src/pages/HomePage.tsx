@@ -1,118 +1,275 @@
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Map, AlertTriangle, BarChart3, MessageSquare,
-  Search, Shield, TrendingDown, Zap, Globe, Mic,
-  ArrowRight, CheckCircle
+  Search, ArrowRight, Globe, Instagram, Twitter,
+  Shield, Zap, TrendingDown
 } from "lucide-react";
 
-const features = [
-  { icon: Map, title: "Live Road Map", desc: "Interactive map with road conditions, complaint heatmap, and project markers", to: "/map", color: "from-blue-500 to-cyan-500", bg: "bg-blue-500/10 border-blue-500/20" },
-  { icon: AlertTriangle, title: "Report Issue", desc: "Submit complaints with GPS + photo. AI scores severity automatically", to: "/report", color: "from-orange-500 to-red-500", bg: "bg-orange-500/10 border-orange-500/20" },
-  { icon: Search, title: "Track Complaint", desc: "Real-time status with tamper-proof blockchain audit trail", to: "/track", color: "from-purple-500 to-pink-500", bg: "bg-purple-500/10 border-purple-500/20" },
-  { icon: BarChart3, title: "Dashboard", desc: "Budget transparency, contractor scorecards, anomaly detection", to: "/dashboard", color: "from-green-500 to-emerald-500", bg: "bg-green-500/10 border-green-500/20" },
-  { icon: MessageSquare, title: "AI Assistant", desc: "Ask anything about roads, budgets, contractors in your language", to: "/chat", color: "from-cyan-500 to-blue-500", bg: "bg-cyan-500/10 border-cyan-500/20" },
-];
-
-const stats = [
-  { value: "10K+", label: "Roads Monitored" },
-  { value: "85%", label: "Complaints Resolved" },
-  { value: "₹500Cr+", label: "Budget Tracked" },
-  { value: "7+", label: "Languages" },
-];
-
-const innovations = [
-  { icon: Zap, title: "AI Severity Scoring", desc: "CV model classifies pothole damage from photos" },
-  { icon: TrendingDown, title: "Predictive ML", desc: "Forecasts road failures 90 days in advance" },
-  { icon: Shield, title: "Tamper-Proof Ledger", desc: "SHA-256 hash chain audit trail" },
-  { icon: Globe, title: "Global Ready", desc: "India, USA, Europe and beyond" },
-  { icon: Mic, title: "Voice Accessible", desc: "Full voice interaction in 7+ languages" },
-  { icon: CheckCircle, title: "Budget Anomaly AI", desc: "Flags suspicious government spending" },
-];
-
 export default function HomePage() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const fadingOutRef = useRef(false);
+
+  // ── Video fade system ────────────────────────────────────────────────────
+  const cancelAnim = () => {
+    if (animFrameRef.current !== null) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+  };
+
+  const fadeIn = (video: HTMLVideoElement) => {
+    cancelAnim();
+    fadingOutRef.current = false;
+    const start = performance.now();
+    const from = video.style.opacity ? parseFloat(video.style.opacity) : 0;
+    const duration = 500;
+    const step = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      video.style.opacity = String(from + (1 - from) * t);
+      if (t < 1) animFrameRef.current = requestAnimationFrame(step);
+    };
+    animFrameRef.current = requestAnimationFrame(step);
+  };
+
+  const fadeOut = (video: HTMLVideoElement, onDone: () => void) => {
+    cancelAnim();
+    fadingOutRef.current = true;
+    const start = performance.now();
+    const from = parseFloat(video.style.opacity || "1");
+    const duration = 500;
+    const step = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      video.style.opacity = String(from * (1 - t));
+      if (t < 1) {
+        animFrameRef.current = requestAnimationFrame(step);
+      } else {
+        fadingOutRef.current = false;
+        onDone();
+      }
+    };
+    animFrameRef.current = requestAnimationFrame(step);
+  };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.style.opacity = "0";
+
+    const handleCanPlay = () => fadeIn(video);
+
+    const handleTimeUpdate = () => {
+      if (!video.duration) return;
+      const remaining = video.duration - video.currentTime;
+      if (remaining <= 0.55 && !fadingOutRef.current) {
+        fadeOut(video, () => {});
+      }
+    };
+
+    const handleEnded = () => {
+      video.style.opacity = "0";
+      setTimeout(() => {
+        video.currentTime = 0;
+        video.play().then(() => fadeIn(video)).catch(() => {});
+      }, 100);
+    };
+
+    video.addEventListener("canplay", handleCanPlay);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("ended", handleEnded);
+
+    return () => {
+      cancelAnim();
+      video.removeEventListener("canplay", handleCanPlay);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("ended", handleEnded);
+    };
+  }, []);
+
   return (
-    <div className="md:ml-16 min-h-screen">
-      {/* Hero */}
-      <div className="relative overflow-hidden px-6 py-20 text-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-900/30 via-slate-950 to-slate-950" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-600/10 rounded-full blur-3xl" />
-        <div className="relative max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-brand-900/50 border border-brand-700/50 text-brand-300 text-xs px-4 py-2 rounded-full mb-8 backdrop-blur-sm">
+    <>
+      {/* Inject Google Font + liquid-glass CSS */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+        .liquid-glass {
+          background: rgba(255, 255, 255, 0.01);
+          background-blend-mode: luminosity;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          border: none;
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+          position: relative;
+          overflow: hidden;
+        }
+        .liquid-glass::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          padding: 1.4px;
+          background: linear-gradient(
+            180deg,
+            rgba(255,255,255,0.45) 0%,
+            rgba(255,255,255,0.15) 20%,
+            rgba(255,255,255,0)    40%,
+            rgba(255,255,255,0)    60%,
+            rgba(255,255,255,0.15) 80%,
+            rgba(255,255,255,0.45) 100%
+          );
+          -webkit-mask: linear-gradient(#fff 0 0) content-box,
+                        linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+      `}</style>
+
+      <div className="min-h-screen bg-black overflow-hidden flex flex-col relative">
+
+        {/* ── Background Video ─────────────────────────────────────────── */}
+        <video
+          ref={videoRef}
+          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4"
+          autoPlay
+          muted
+          playsInline
+          loop={false}
+          className="absolute inset-0 w-full h-full object-cover translate-y-[17%]"
+          style={{ opacity: 0, zIndex: 0 }}
+        />
+
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/40" style={{ zIndex: 1 }} />
+
+        {/* ── Navigation ───────────────────────────────────────────────── */}
+        <nav className="relative py-6 pl-6 pr-6" style={{ zIndex: 20 }}>
+          <div className="liquid-glass rounded-full px-6 py-3 flex items-center justify-between max-w-5xl mx-auto">
+            {/* Left: Logo + nav links */}
+            <div className="flex items-center gap-8">
+              <Link to="/" className="flex items-center gap-2 text-white font-semibold text-lg">
+                <Globe size={24} />
+                RoadWatch
+              </Link>
+              <div className="hidden md:flex items-center gap-6">
+                {[
+                  { label: "Map", to: "/map" },
+                  { label: "Dashboard", to: "/dashboard" },
+                  { label: "AI Chat", to: "/chat" },
+                ].map(({ label, to }) => (
+                  <Link key={to} to={to}
+                    className="text-white/80 hover:text-white transition-colors text-sm font-medium">
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            {/* Right */}
+            <div className="flex items-center gap-4">
+              <Link to="/track" className="text-white text-sm font-medium hover:text-white/80 transition-colors">
+                Track
+              </Link>
+              <Link to="/report"
+                className="liquid-glass rounded-full px-6 py-2 text-white text-sm font-medium hover:bg-white/5 transition-colors">
+                Report Issue
+              </Link>
+            </div>
+          </div>
+        </nav>
+
+        {/* ── Hero Content ─────────────────────────────────────────────── */}
+        <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-12 text-center -translate-y-[10%]"
+          style={{ zIndex: 10 }}>
+
+          {/* Badge */}
+          <div className="liquid-glass rounded-full px-4 py-1.5 text-white/70 text-xs mb-8 inline-flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
             Road Safety Hackathon 2026 · CoERS, IIT Madras
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-            Road Transparency<br />
-            <span className="bg-gradient-to-r from-brand-400 to-cyan-400 bg-clip-text text-transparent">
-              Powered by AI
-            </span>
+
+          {/* Heading */}
+          <h1
+            className="text-5xl md:text-6xl lg:text-7xl text-white mb-8 tracking-tight whitespace-nowrap"
+            style={{ fontFamily: "'Instrument Serif', serif" }}
+          >
+            Roads. Transparent.
           </h1>
-          <p className="text-slate-400 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            Monitor road quality, track public spending, report issues, and hold authorities accountable — with full AI-powered transparency.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/map" className="group flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg shadow-brand-900/50 hover:shadow-brand-600/30">
-              <Map size={20} /> Explore Map
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link to="/report" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold px-8 py-4 rounded-xl transition-all border border-slate-700">
-              <AlertTriangle size={20} /> Report Issue
-            </Link>
-          </div>
-        </div>
-      </div>
 
-      {/* Stats */}
-      <div className="px-4 py-8 max-w-4xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map(({ value, label }) => (
-            <div key={label} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 text-center hover:border-slate-700 transition-colors">
-              <div className="text-3xl font-bold bg-gradient-to-r from-brand-400 to-cyan-400 bg-clip-text text-transparent">{value}</div>
-              <div className="text-slate-500 text-sm mt-1">{label}</div>
+          {/* Sub-content */}
+          <div className="max-w-xl w-full space-y-4">
+            {/* Email / search bar */}
+            <div className="liquid-glass rounded-full pl-6 pr-2 py-2 flex items-center gap-3">
+              <Search size={18} className="text-white/40 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search a road, contractor, or complaint..."
+                className="flex-1 bg-transparent text-white placeholder:text-white/40 text-base outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    window.location.href = `/map`;
+                  }
+                }}
+              />
+              <Link to="/map"
+                className="bg-white rounded-full p-3 text-black hover:bg-white/90 transition-colors shrink-0">
+                <ArrowRight size={20} />
+              </Link>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Features */}
-      <div className="px-4 py-8 max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-white mb-2">Everything You Need</h2>
-        <p className="text-slate-500 mb-6">One platform for complete road transparency</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {features.map(({ icon: Icon, title, desc, to, color, bg }) => (
-            <Link key={to} to={to}
-              className={`group relative overflow-hidden border rounded-2xl p-5 hover:scale-[1.02] transition-all ${bg}`}>
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mb-4 shadow-lg`}>
-                <Icon size={20} className="text-white" />
-              </div>
-              <h3 className="font-semibold text-white mb-2">{title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
-              <ArrowRight size={16} className="absolute bottom-4 right-4 text-slate-600 group-hover:text-slate-400 group-hover:translate-x-1 transition-all" />
-            </Link>
-          ))}
-        </div>
-      </div>
+            {/* Subtitle */}
+            <p className="text-white/60 text-sm leading-relaxed px-4">
+              Monitor road quality, track public spending, report issues, and hold authorities accountable — powered by AI.
+            </p>
 
-      {/* Innovations */}
-      <div className="px-4 py-8 max-w-4xl mx-auto mb-8">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-900/50 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-1">What Makes RoadWatch Unique</h2>
-          <p className="text-slate-500 text-sm mb-6">9 innovative features beyond the basics</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {innovations.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-brand-900/50 border border-brand-800/50 flex items-center justify-center shrink-0">
-                  <Icon size={15} className="text-brand-400" />
-                </div>
-                <div>
-                  <div className="text-white text-sm font-medium">{title}</div>
-                  <div className="text-slate-500 text-xs mt-0.5">{desc}</div>
-                </div>
+            {/* CTA buttons */}
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Link to="/map"
+                className="liquid-glass rounded-full px-8 py-3 text-white text-sm font-medium hover:bg-white/5 transition-colors flex items-center gap-2">
+                <Map size={16} /> Explore Map
+              </Link>
+              <Link to="/dashboard"
+                className="liquid-glass rounded-full px-8 py-3 text-white text-sm font-medium hover:bg-white/5 transition-colors flex items-center gap-2">
+                <BarChart3 size={16} /> Dashboard
+              </Link>
+            </div>
+          </div>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap justify-center gap-3 mt-10">
+            {[
+              { icon: Zap, label: "AI Severity Scoring" },
+              { icon: TrendingDown, label: "Predictive ML" },
+              { icon: Shield, label: "Tamper-Proof Ledger" },
+              { icon: MessageSquare, label: "Multilingual AI Chat" },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label}
+                className="liquid-glass rounded-full px-4 py-2 text-white/70 text-xs flex items-center gap-2">
+                <Icon size={13} className="text-white/50" />
+                {label}
               </div>
             ))}
           </div>
         </div>
+
+        {/* ── Social Footer ─────────────────────────────────────────────── */}
+        <div className="relative flex justify-center gap-4 pb-12" style={{ zIndex: 10 }}>
+          <button aria-label="Instagram"
+            className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all">
+            <Instagram size={20} />
+          </button>
+          <button aria-label="Twitter"
+            className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all">
+            <Twitter size={20} />
+          </button>
+          <Link to="/map" aria-label="Explore Map"
+            className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all">
+            <Globe size={20} />
+          </Link>
+        </div>
+
       </div>
-    </div>
+    </>
   );
 }
