@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Volume2, Sparkles, Bot, User, Loader2, Zap } from "lucide-react";
+import { Send, Mic, MicOff, Volume2, Sparkles, User, Loader2, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 import { sendChatMessage, streamChatMessage } from "../api/chatbot";
 import { transcribeAudio, speakText } from "../api/voice";
 import toast from "react-hot-toast";
@@ -21,33 +22,6 @@ const SUGGESTIONS = [
   "What is the contractor scorecard?",
   "Show me road spending transparency",
 ];
-
-// Animated AI status indicator
-function AIStatusRing({ active }: { active: boolean }) {
-  return (
-    <div className="relative w-16 h-16 flex items-center justify-center">
-      {/* Outer ring */}
-      <div className="absolute inset-0 rounded-full"
-        style={{
-          background: "conic-gradient(from 0deg, rgba(56,189,248,0.8), rgba(129,140,248,0.8), rgba(56,189,248,0.8))",
-          animation: active ? "spin 2s linear infinite" : "spin 6s linear infinite",
-          padding: "2px",
-        }}>
-        <div className="w-full h-full rounded-full" style={{ background: "#020817" }} />
-      </div>
-      {/* Inner glow */}
-      <div className="absolute inset-1 rounded-full"
-        style={{
-          background: active
-            ? "radial-gradient(circle, rgba(56,189,248,0.3) 0%, rgba(129,140,248,0.1) 100%)"
-            : "radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 100%)",
-          transition: "all 0.5s ease",
-        }} />
-      {/* Icon */}
-      <Sparkles size={20} style={{ color: active ? "#38bdf8" : "rgba(56,189,248,0.5)", position: "relative", zIndex: 1 }} />
-    </div>
-  );
-}
 
 export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([
@@ -138,35 +112,43 @@ export default function ChatbotPage() {
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
   };
 
+  const statusColor = { idle: "#34d399", thinking: "#38bdf8", speaking: "#a78bfa" }[status];
   const statusLabel = { idle: "Ready", thinking: "Thinking...", speaking: "Responding" }[status];
-  const statusColor = { idle: "#34d399", thinking: "#38bdf8", speaking: "#818cf8" }[status];
 
   return (
-    <div className="md:ml-16 h-[calc(100vh-56px)] flex flex-col" style={{ background: "#020817" }}>
+    <div className="md:ml-16 h-[calc(100vh-56px)] flex flex-col" style={{ background: "#000" }}>
 
       {/* ── Header ── */}
-      <div className="glass flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: "1px solid rgba(56,189,248,0.08)" }}>
-        <div className="flex items-center gap-4">
-          <AIStatusRing active={status !== "idle"} />
-          <div>
-            <div className="font-semibold text-white flex items-center gap-2">
-              RoadWatch AI
-              <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.2)", color: "rgba(56,189,248,0.8)" }}>
-                Groq · Llama 3.3 70B
-              </span>
+      <div className="flex items-center justify-between px-5 py-3"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.8)", backdropFilter: "blur(12px)" }}>
+        <div className="flex items-center gap-3">
+          {/* AI indicator — animated ring, no sphere */}
+          <div className="relative w-9 h-9 flex items-center justify-center">
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{ border: `1.5px solid ${statusColor}`, opacity: status !== "idle" ? 1 : 0.3 }}
+              animate={status !== "idle" ? { scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] } : {}}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <div className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <Sparkles size={13} style={{ color: statusColor }} />
             </div>
-            <div className="flex items-center gap-1.5 text-xs mt-0.5">
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor }} />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-white">RoadWatch AI</div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: statusColor }} />
               <span style={{ color: statusColor }}>{statusLabel}</span>
+              <span className="text-white/20 mx-1">·</span>
+              <span className="text-white/30">Groq Llama 3.3 70B</span>
             </div>
           </div>
         </div>
 
         <select value={language} onChange={e => setLanguage(e.target.value)}
-          className="glass text-xs rounded-xl px-3 py-1.5 text-white/60 outline-none"
-          style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+          className="text-xs rounded-lg px-3 py-1.5 text-white/50 outline-none"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <option value="en">🇬🇧 English</option>
           <option value="hi">🇮🇳 हिंदी</option>
           <option value="ta">தமிழ்</option>
@@ -178,63 +160,68 @@ export default function ChatbotPage() {
       </div>
 
       {/* ── Messages ── */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map(msg => (
-          <div key={msg.id} className={clsx("flex gap-3 chat-bubble", msg.role === "user" && "flex-row-reverse")}>
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+        {messages.map((msg, i) => (
+          <motion.div key={msg.id}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className={clsx("flex gap-3", msg.role === "user" && "flex-row-reverse")}>
+
             {/* Avatar */}
-            <div className={clsx("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5")}
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
               style={msg.role === "assistant"
-                ? { background: "linear-gradient(135deg,rgba(56,189,248,0.3),rgba(129,140,248,0.3))", border: "1px solid rgba(56,189,248,0.3)", boxShadow: "0 0 12px rgba(56,189,248,0.15)" }
-                : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }
+                ? { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }
+                : { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }
               }>
               {msg.role === "assistant"
-                ? <Sparkles size={14} style={{ color: "#38bdf8" }} />
-                : <User size={14} className="text-white/60" />
+                ? <Sparkles size={12} className="text-white/50" />
+                : <User size={12} className="text-white/60" />
               }
             </div>
 
             {/* Bubble */}
-            <div className={clsx("max-w-[80%] rounded-2xl px-4 py-3 text-sm")}
+            <div className={clsx("max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed")}
               style={msg.role === "assistant"
-                ? { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "#e2e8f0", borderTopLeftRadius: 4 }
-                : { background: "linear-gradient(135deg,rgba(56,189,248,0.2),rgba(129,140,248,0.2))", border: "1px solid rgba(56,189,248,0.25)", color: "white", borderTopRightRadius: 4, boxShadow: "0 0 20px rgba(56,189,248,0.08)" }
+                ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "#e2e8f0", borderTopLeftRadius: 4 }
+                : { background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.12)", color: "white", borderTopRightRadius: 4 }
               }>
               {msg.loading ? (
-                <div className="flex items-center gap-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  {[0,150,300].map(d => (
-                    <span key={d} className="w-1.5 h-1.5 rounded-full animate-bounce"
-                      style={{ background: "rgba(56,189,248,0.5)", animationDelay: `${d}ms` }} />
+                <div className="flex items-center gap-1.5">
+                  {[0,120,240].map(d => (
+                    <motion.span key={d} className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: "rgba(255,255,255,0.3)" }}
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1, repeat: Infinity, delay: d / 1000 }} />
                   ))}
                 </div>
               ) : (
                 <>
-                  <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                  <div className="whitespace-pre-wrap">{msg.content}</div>
                   {msg.role === "assistant" && msg.content && (
                     <button onClick={() => speakText(msg.content, language).catch(() => {})}
-                      className="mt-2 transition-colors" style={{ color: "rgba(255,255,255,0.15)" }}
-                      onMouseEnter={e => (e.currentTarget.style.color = "rgba(56,189,248,0.5)")}
-                      onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.15)")}>
-                      <Volume2 size={12} />
+                      className="mt-2 text-white/15 hover:text-white/40 transition-colors">
+                      <Volume2 size={11} />
                     </button>
                   )}
                 </>
               )}
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {/* Suggestions */}
         {messages.length === 1 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-            {SUGGESTIONS.map(s => (
-              <button key={s} onClick={() => sendMessage(s)}
-                className="text-left text-xs glass rounded-xl px-4 py-3 transition-all group"
-                style={{ border: "1px solid rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}
-                onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = "rgba(56,189,248,0.2)"; el.style.color = "rgba(255,255,255,0.7)"; el.style.boxShadow = "0 0 16px rgba(56,189,248,0.05)"; }}
-                onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = "rgba(255,255,255,0.05)"; el.style.color = "rgba(255,255,255,0.4)"; el.style.boxShadow = "none"; }}>
-                <Zap size={11} className="inline mr-1.5 mb-0.5" style={{ color: "rgba(56,189,248,0.4)" }} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+            {SUGGESTIONS.map((s, i) => (
+              <motion.button key={s} onClick={() => sendMessage(s)}
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="text-left text-xs px-4 py-3 rounded-xl transition-all"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}
+                whileHover={{ borderColor: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)" }}>
+                <Zap size={10} className="inline mr-1.5 mb-0.5 opacity-50" />
                 {s}
-              </button>
+              </motion.button>
             ))}
           </div>
         )}
@@ -242,27 +229,28 @@ export default function ChatbotPage() {
       </div>
 
       {/* ── Input ── */}
-      <div className="p-4" style={{ borderTop: "1px solid rgba(56,189,248,0.08)" }}>
+      <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex gap-2 items-end">
           <textarea ref={textareaRef}
-            className="flex-1 glass rounded-xl px-4 py-3 text-sm text-white resize-none outline-none min-h-[44px]"
-            style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
+            className="flex-1 rounded-xl px-4 py-3 text-sm text-white resize-none outline-none min-h-[44px]"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
             placeholder="Ask about roads, budgets, contractors..."
             value={input} onChange={handleTextareaChange} rows={1}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
           />
           <button type="button" onClick={recording ? stopRecording : startRecording}
-            className={clsx("p-3 rounded-xl glass transition-all", recording ? "text-red-400" : "text-white/30 hover:text-white/60")}
-            style={{ border: `1px solid ${recording ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.07)"}` }}>
+            className={clsx("p-3 rounded-xl transition-all", recording ? "text-red-400" : "text-white/30 hover:text-white/60")}
+            style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${recording ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.08)"}` }}>
             {recording ? <MicOff size={18} /> : <Mic size={18} />}
           </button>
-          <button onClick={() => sendMessage(input)} disabled={!input.trim() || loading}
+          <motion.button onClick={() => sendMessage(input)} disabled={!input.trim() || loading}
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             className="p-3 rounded-xl transition-all disabled:opacity-30"
-            style={{ background: "linear-gradient(135deg,rgba(56,189,248,0.25),rgba(129,140,248,0.25))", border: "1px solid rgba(56,189,248,0.3)", color: "white", boxShadow: "0 0 20px rgba(56,189,248,0.1)" }}>
+            style={{ background: "rgba(255,255,255,0.9)", color: "#000" }}>
             {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-          </button>
+          </motion.button>
         </div>
-        <p className="text-center text-xs mt-2" style={{ color: "rgba(255,255,255,0.15)" }}>
+        <p className="text-center text-xs mt-2 text-white/15">
           Groq Llama 3.3 70B · RAG · Multilingual · Voice
         </p>
       </div>
