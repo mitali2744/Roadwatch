@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
-import { Map, MessageSquare, AlertTriangle, BarChart3, Search, Home, Wifi, WifiOff } from "lucide-react";
+import { Map, MessageSquare, AlertTriangle, BarChart3, Search, Home, Wifi, WifiOff, Users, Shield } from "lucide-react";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { usePendingSync } from "../hooks/usePendingSync";
 import ParticleBackground from "./ParticleBackground";
@@ -10,8 +10,10 @@ const navItems = [
   { to: "/map", icon: Map, label: "Map" },
   { to: "/report", icon: AlertTriangle, label: "Report" },
   { to: "/track", icon: Search, label: "Track" },
+  { to: "/feed", icon: Users, label: "Feed" },
   { to: "/dashboard", icon: BarChart3, label: "Dashboard" },
   { to: "/chat", icon: MessageSquare, label: "AI Chat" },
+  { to: "/admin", icon: Shield, label: "Admin" },
 ];
 
 export default function Layout() {
@@ -24,12 +26,11 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col" style={{ background: "#020817" }}>
       <ParticleBackground />
 
-      {/* ── Top bar (hidden on home) ── */}
+      {/* Top bar (hidden on home) */}
       {!isHome && (
         <header className="glass sticky top-0 z-50 px-4 py-3 flex items-center justify-between"
           style={{ borderBottom: "1px solid rgba(56,189,248,0.08)" }}>
           <div className="flex items-center gap-3">
-            {/* Logo */}
             <div className="w-8 h-8 rounded-lg flex items-center justify-center"
               style={{ background: "linear-gradient(135deg,#38bdf8,#818cf8)", boxShadow: "0 0 20px rgba(56,189,248,0.3)" }}>
               <span className="text-white font-bold text-xs">RW</span>
@@ -39,7 +40,6 @@ export default function Layout() {
               <div className="text-xs" style={{ color: "rgba(56,189,248,0.7)" }}>Road Transparency Platform</div>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
             <div className={clsx("flex items-center gap-1.5 text-xs px-3 py-1 rounded-full glass",
               isOnline ? "text-emerald-400" : "text-red-400")}
@@ -59,29 +59,27 @@ export default function Layout() {
         </header>
       )}
 
-      {/* ── Main ── */}
+      {/* Main */}
       <main className="flex-1 overflow-auto relative z-10">
         <Outlet />
       </main>
 
-      {/* ── Bottom nav (mobile, hidden on home) ── */}
+      {/* Bottom nav (mobile, hidden on home) */}
       {!isHome && (
-        <nav className="glass md:hidden sticky bottom-0 z-50 px-2 py-2 flex justify-around"
+        <nav className="glass md:hidden sticky bottom-0 z-50 px-1 py-2 flex justify-around"
           style={{ borderTop: "1px solid rgba(56,189,248,0.08)" }}>
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} end={to === "/"}
               className={({ isActive }) => clsx(
-                "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all text-xs",
+                "flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all text-xs",
                 isActive ? "text-sky-400" : "text-slate-500 hover:text-slate-300"
               )}>
               {({ isActive }) => (
                 <>
-                  <div className={clsx("p-1.5 rounded-lg transition-all",
-                    isActive && "bg-sky-400/10")}
-                    style={isActive ? { boxShadow: "0 0 12px rgba(56,189,248,0.2)" } : {}}>
-                    <Icon size={18} />
+                  <div className={clsx("p-1 rounded-lg transition-all", isActive && "bg-sky-400/10")}>
+                    <Icon size={16} />
                   </div>
-                  {label}
+                  <span style={{ fontSize: "9px" }}>{label}</span>
                 </>
               )}
             </NavLink>
@@ -89,20 +87,20 @@ export default function Layout() {
         </nav>
       )}
 
-      {/* ── Sidebar (desktop, hidden on home) ── */}
+      {/* Sidebar (desktop, hidden on home) */}
       {!isHome && (
         <aside className="hidden md:flex fixed left-0 top-0 h-full w-16 flex-col items-center py-4 gap-1 z-40 pt-20"
           style={{ background: "rgba(2,8,23,0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid rgba(56,189,248,0.06)" }}>
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} end={to === "/"} title={label}
               className={({ isActive }) => clsx(
-                "flex flex-col items-center gap-1 p-3 rounded-xl transition-all w-12 text-xs",
+                "flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-12 text-xs",
                 isActive ? "text-sky-400" : "text-slate-600 hover:text-slate-300"
               )}>
               {({ isActive }) => (
                 <div className={clsx("p-2 rounded-xl transition-all", isActive && "bg-sky-400/10")}
                   style={isActive ? { boxShadow: "0 0 16px rgba(56,189,248,0.25)" } : {}}>
-                  <Icon size={20} />
+                  <Icon size={18} />
                 </div>
               )}
             </NavLink>

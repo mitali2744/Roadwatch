@@ -232,6 +232,10 @@ class Complaint(Base):
     submitted_offline = Column(Boolean, default=False)
     synced_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Work progress (0-100%) — updated by admin/authority
+    work_progress = Column(Integer, default=0)
+    work_updates = Column(JSON, default=[])  # [{progress, note, actor, timestamp}]
+
     country_code = Column(String(3), default="IN")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

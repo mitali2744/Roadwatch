@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import os
 
-from api.routes import roads, complaints, chatbot, dashboard, auth, voice, predictions
+from api.routes import roads, complaints, chatbot, dashboard, auth, voice, predictions, public_feed
 from db.database import init_db
 from services.rag.vector_store import init_vector_store
 from core.config import settings
@@ -82,6 +82,7 @@ app.include_router(chatbot.router,     prefix="/api/chatbot",     tags=["AI Chat
 app.include_router(dashboard.router,   prefix="/api/dashboard",   tags=["Dashboard"])
 app.include_router(voice.router,       prefix="/api/voice",       tags=["Voice"])
 app.include_router(predictions.router, prefix="/api/predictions", tags=["ML Predictions"])
+app.include_router(public_feed.router,  prefix="/api/feed",        tags=["Public Feed"])
 
 # Static files (uploaded images)
 os.makedirs("uploads", exist_ok=True)

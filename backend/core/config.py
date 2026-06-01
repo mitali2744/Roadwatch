@@ -38,7 +38,8 @@ class Settings(BaseSettings):
     ALLOWED_ORIGIN_REGEX: str = r"https://.*\.onrender\.com"
     FRONTEND_URL: str = ""
 
-    # File uploads
+    # Admin
+    ADMIN_KEY: str = "roadwatch-admin-2026"  # Change this in production!
     MAX_UPLOAD_SIZE_MB: int = 10
     UPLOAD_DIR: str = "uploads"
 
