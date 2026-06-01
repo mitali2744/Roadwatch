@@ -7,6 +7,9 @@ import TrackPage from "./pages/TrackPage";
 import DashboardPage from "./pages/DashboardPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import RoadDetailPage from "./pages/RoadDetailPage";
+import PublicFeedPage from "./pages/PublicFeedPage";
+import ComplaintDetailPage from "./pages/ComplaintDetailPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 export default function App() {
   return (
@@ -19,6 +22,9 @@ export default function App() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="chat" element={<ChatbotPage />} />
         <Route path="road/:id" element={<RoadDetailPage />} />
+        <Route path="feed" element={<PublicFeedPage />} />
+        <Route path="complaint/:id" element={<ComplaintDetailPage />} />
+        <Route path="admin/dashboard" element={<AdminDashboardPage />} />
       </Route>
     </Routes>
   );
