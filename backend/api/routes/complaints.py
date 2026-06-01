@@ -8,7 +8,7 @@ import uuid, os, math
 from datetime import datetime
 
 from db.database import get_db
-from db.models import Complaint, ComplaintStatus, ComplaintType, LedgerEntry, Authority, RoadSegment
+from db.models import Complaint, ComplaintStatus, ComplaintType, LedgerEntry, Authority, RoadSegment, WorkUpdate, User, UserRole
 from services.ml.severity_scorer import score_image_severity
 from services.routing.complaint_router import route_complaint
 from services.ledger.audit_chain import append_ledger_entry
@@ -214,3 +214,223 @@ async def update_complaint_status(
     complaint.ledger_hash = ledger_hash
     await db.commit()
     return {"success": True, "new_status": new_status, "ledger_hash": ledger_hash}
+
+
+@router.get("/public/feed")
+async def get_public_complaints_feed(
+    skip: int = Query(0), limit: int = Query(20),
+    status_filter: Optional[str] = Query(None),
+    severity_filter: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Public API — list all complaints with progress for public visibility."""
+    query = select(Complaint)
+    
+    if status_filter:
+        query = query.where(Complaint.status == status_filter)
+    if severity_filter:
+        query = query.where(Complaint.ai_severity == severity_filter)
+    
+    query = query.order_by(Complaint.created_at.desc()).offset(skip).limit(limit)
+    result = await db.execute(query)
+    complaints = result.scalars().all()
+    
+    feed = []
+    for c in complaints:
+        contractor_name = None
+        if c.assigned_contractor_id:
+            cont_result = await db.execute(
+                select(User).where(User.id == c.assigned_contractor_id)
+            )
+            cont = cont_result.scalar_one_or_none()
+            contractor_name = cont.name if cont else "Unknown"
+        
+        feed.append({
+            "id": str(c.id),
+            "ticket_number": c.ticket_number,
+            "type": str(c.complaint_type),
+            "status": str(c.status),
+            "severity": str(c.ai_severity) if c.ai_severity else "UNKNOWN",
+            "address": c.address or "Location not specified",
+            "progress_percentage": c.progress_percentage,
+            "assigned_contractor": contractor_name,
+            "image_urls": c.image_urls,
+            "submitted_at": c.created_at.isoformat(),
+            "updated_at": c.updated_at.isoformat(),
+        })
+    
+    return {"complaints": feed, "total": len(feed), "skip": skip, "limit": limit}
+
+
+@router.get("/{complaint_id}/work-updates")
+async def get_work_updates(complaint_id: str, db: AsyncSession = Depends(get_db)):
+    """Get timeline of work updates on a complaint."""
+    result = await db.execute(
+        select(WorkUpdate)
+        .where(WorkUpdate.complaint_id == complaint_id)
+        .order_by(WorkUpdate.created_at.asc())
+    )
+    updates = result.scalars().all()
+    
+    timeline = []
+    for update in updates:
+        user_result = await db.execute(
+            select(User).where(User.id == update.updated_by_user_id)
+        )
+        user = user_result.scalar_one_or_none()
+        
+        timeline.append({
+            "id": str(update.id),
+            "progress": update.progress_percentage,
+            "note": update.update_note,
+            "before_image": update.before_image_url,
+            "after_image": update.after_image_url,
+            "updated_by": user.name if user else "Unknown",
+            "updated_by_role": str(user.role) if user else "UNKNOWN",
+            "timestamp": update.created_at.isoformat(),
+        })
+    
+    return {"complaint_id": complaint_id, "updates": timeline, "total": len(timeline)}
+
+
+@router.post("/{complaint_id}/work-updates")
+async def add_work_update(
+    complaint_id: str,
+    progress_percentage: int = Form(...),
+    update_note: str = Form(""),
+    updated_by_email: str = Form(...),
+    before_image: Optional[UploadFile] = File(None),
+    after_image: Optional[UploadFile] = File(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin/Contractor adds work progress update on a complaint."""
+    # Verify user is admin or contractor
+    user_result = await db.execute(
+        select(User).where(User.email == updated_by_email)
+    )
+    user = user_result.scalar_one_or_none()
+    if not user or user.role not in [UserRole.ADMIN, UserRole.CONTRACTOR]:
+        raise HTTPException(status_code=403, detail="Only admins and contractors can add work updates")
+    
+    # Verify complaint exists
+    complaint_result = await db.execute(
+        select(Complaint).where(Complaint.id == complaint_id)
+    )
+    complaint = complaint_result.scalar_one_or_none()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+    
+    # Save images if provided
+    before_url = after_url = None
+    if before_image and before_image.filename:
+        ext = os.path.splitext(before_image.filename)[1].lower()
+        if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
+            raise HTTPException(status_code=400, detail=f"Unsupported image format: {ext}")
+        filename = f"before_{uuid.uuid4()}{ext}"
+        filepath = os.path.join(settings.UPLOAD_DIR, filename)
+        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+        content = await before_image.read()
+        with open(filepath, "wb") as f:
+            f.write(content)
+        before_url = f"/uploads/{filename}"
+    
+    if after_image and after_image.filename:
+        ext = os.path.splitext(after_image.filename)[1].lower()
+        if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
+            raise HTTPException(status_code=400, detail=f"Unsupported image format: {ext}")
+        filename = f"after_{uuid.uuid4()}{ext}"
+        filepath = os.path.join(settings.UPLOAD_DIR, filename)
+        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+        content = await after_image.read()
+        with open(filepath, "wb") as f:
+            f.write(content)
+        after_url = f"/uploads/{filename}"
+    
+    # Create work update
+    work_update = WorkUpdate(
+        complaint_id=complaint_id,
+        updated_by_user_id=user.id,
+        progress_percentage=progress_percentage,
+        update_note=update_note,
+        before_image_url=before_url,
+        after_image_url=after_url,
+    )
+    db.add(work_update)
+    
+    # Update complaint progress
+    complaint.progress_percentage = progress_percentage
+    
+    # Auto-mark as resolved if progress is 100%
+    if progress_percentage >= 100:
+        complaint.status = ComplaintStatus.RESOLVED
+        history = complaint.status_history or []
+        history.append({
+            "status": "RESOLVED",
+            "timestamp": datetime.utcnow().isoformat(),
+            "note": "Auto-resolved: 100% complete",
+            "actor": user.name,
+        })
+        complaint.status_history = history
+    elif progress_percentage > 0 and complaint.status == ComplaintStatus.PENDING:
+        complaint.status = ComplaintStatus.IN_PROGRESS
+        history = complaint.status_history or []
+        history.append({
+            "status": "IN_PROGRESS",
+            "timestamp": datetime.utcnow().isoformat(),
+            "note": "Work started",
+            "actor": user.name,
+        })
+        complaint.status_history = history
+    
+    await db.commit()
+    
+    return {
+        "success": True,
+        "work_update_id": str(work_update.id),
+        "complaint_id": complaint_id,
+        "new_progress": progress_percentage,
+        "status": str(complaint.status),
+    }
+
+
+@router.patch("/{complaint_id}/assign-contractor")
+async def assign_contractor(
+    complaint_id: str,
+    contractor_email: str,
+    assigned_by_email: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin assigns a contractor to a complaint."""
+    # Verify admin
+    admin_result = await db.execute(
+        select(User).where(User.email == assigned_by_email)
+    )
+    admin = admin_result.scalar_one_or_none()
+    if not admin or admin.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can assign contractors")
+    
+    # Get contractor
+    contractor_result = await db.execute(
+        select(User).where(User.email == contractor_email)
+    )
+    contractor = contractor_result.scalar_one_or_none()
+    if not contractor or contractor.role != UserRole.CONTRACTOR:
+        raise HTTPException(status_code=404, detail="Contractor not found or invalid role")
+    
+    # Update complaint
+    complaint_result = await db.execute(
+        select(Complaint).where(Complaint.id == complaint_id)
+    )
+    complaint = complaint_result.scalar_one_or_none()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+    
+    complaint.assigned_contractor_id = contractor.id
+    await db.commit()
+    
+    return {
+        "success": True,
+        "complaint_id": complaint_id,
+        "assigned_to": contractor.name,
+        "assigned_to_email": contractor.email,
+    }
