@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
@@ -10,6 +10,9 @@ import {
 export default function HomePage() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const testimonialRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const fadingOutRef = useRef(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -25,6 +28,81 @@ export default function HomePage() {
     target: testimonialRef,
     offset: ["start end", "end center"],
   });
+
+  // Video fade helpers: requestAnimationFrame-based fades
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    const cancelRaf = () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+
+    const fadeTo = (target: number, duration = 500) => {
+      cancelRaf();
+      const start = performance.now();
+      const comp = getComputedStyle(v);
+      const from = parseFloat(comp.opacity || "0") || 0;
+      const delta = target - from;
+
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        const value = from + delta * t;
+        v.style.opacity = String(value);
+        if (t < 1) {
+          rafRef.current = requestAnimationFrame(step);
+        } else {
+          rafRef.current = null;
+        }
+      };
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    // on load, fade in
+    const onLoaded = () => {
+      try { v.style.opacity = "0"; } catch {}
+      fadeTo(1, 500);
+    };
+
+    // when nearing end, fade out
+    const onTimeUpdate = () => {
+      if (!v.duration || isNaN(v.duration)) return;
+      const remain = v.duration - v.currentTime;
+      if (remain <= 0.55 && !fadingOutRef.current) {
+        fadingOutRef.current = true;
+        fadeTo(0, 500);
+      }
+    };
+
+    // when ended, quickly reset and fade in again
+    const onEnded = () => {
+      cancelRaf();
+      try { v.style.opacity = "0"; } catch {}
+      setTimeout(() => {
+        try { v.currentTime = 0; v.play().catch(() => {}); } catch {}
+        fadingOutRef.current = false;
+        fadeTo(1, 500);
+      }, 100);
+    };
+
+    v.addEventListener("loadeddata", onLoaded);
+    v.addEventListener("timeupdate", onTimeUpdate);
+    v.addEventListener("ended", onEnded);
+
+    // ensure play and initial fade
+    v.play().catch(() => {});
+    onLoaded();
+
+    return () => {
+      cancelRaf();
+      v.removeEventListener("loadeddata", onLoaded);
+      v.removeEventListener("timeupdate", onTimeUpdate);
+      v.removeEventListener("ended", onEnded);
+    };
+  }, []);
 
   return (
     <>
@@ -66,12 +144,14 @@ export default function HomePage() {
           mask-composite: exclude;
           pointer-events: none;
         }
+        /* video helper */
+        .hero-video { transform: translateY(17%); }
       `}</style>
 
       <div style={{ background: "hsl(var(--background))", color: "hsl(var(--foreground))", fontFamily: "'Inter', sans-serif" }}>
 
-        {/* ══ SECTION 1: HERO ══════════════════════════════════════════════ */}
-        <section ref={sectionRef} className="relative min-h-screen overflow-hidden">
+        {/* New HERO SECTION with background video and liquid-glass UI */}
+        <section className="relative min-h-screen bg-black overflow-hidden">
 
           {/* ── Navbar ── */}
           <nav className="relative z-50 flex items-center justify-between px-8 md:px-28 py-4">
@@ -106,68 +186,39 @@ export default function HomePage() {
             </Link>
           </nav>
 
+          <video
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover hero-video"
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4"
+            muted
+            playsInline
+            autoPlay
+            onLoadedData={() => {
+              const v = videoRef.current;
+              if (!v) return;
+              v.style.opacity = "0";
+              v.play().catch(() => {});
+            }}
+          />
+
           {/* ── Hero Content ── */}
-          <motion.div style={{ y: heroY, opacity: heroOpacity }}
-            className="relative z-10 flex flex-col items-center text-center px-4"
-            style2={{ marginTop: "5rem" }}>
+          <div className="relative z-20 flex flex-col items-center text-center px-6 py-12 -translate-y-[20%]">
 
-            {/* Tag pill */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="liquid-glass inline-flex items-center gap-2 mb-6"
-              style={{ borderRadius: "8px", padding: "8px 12px" }}>
-              <span style={{ background: "white", color: "black", borderRadius: "6px", fontSize: "14px", fontWeight: 500, padding: "2px 8px" }}>New</span>
-              <span style={{ fontSize: "14px", fontWeight: 500, color: "hsl(var(--muted-foreground))" }}>Road Safety Hackathon 2026 · CoERS, IIT Madras</span>
-            </motion.div>
-
-            {/* Title */}
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-              style={{ fontSize: "clamp(2.5rem, 7vw, 4.5rem)", fontWeight: 500, letterSpacing: "-2px", lineHeight: 1.15, marginBottom: "12px", color: "white" }}>
-              Your Roads.<br />
-              One Clear{" "}
-              <span style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontWeight: 400 }}>
-                Overview.
-              </span>
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-              style={{ fontSize: "18px", fontWeight: 400, lineHeight: "1.5", opacity: 0.9, marginBottom: "32px", color: "var(--hero-subtitle)", maxWidth: "480px" }}>
-              RoadWatch helps citizens track road quality, budgets,<br />
-              and complaints with AI-powered precision.
-            </motion.p>
-
-            {/* CTA */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap items-center justify-center gap-3 mb-4">
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                <Link to="/map"
-                  style={{ background: "hsl(var(--foreground))", color: "hsl(var(--background))", borderRadius: "9999px", padding: "14px 32px", fontSize: "16px", fontWeight: 500, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                  <Map size={16} /> Get Started for Free
-                </Link>
-              </motion.div>
-              <Link to="/dashboard"
-                className="liquid-glass"
-                style={{ borderRadius: "9999px", padding: "14px 32px", fontSize: "16px", fontWeight: 500, color: "white", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                <BarChart3 size={16} /> Dashboard
-              </Link>
-            </motion.div>
-
-            {/* Feature pills */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }}
-              className="flex flex-wrap justify-center gap-2 mb-12">
-              {[
-                { icon: Zap, label: "AI Severity Scoring" },
-                { icon: TrendingDown, label: "Predictive ML" },
-                { icon: Shield, label: "Audit Ledger" },
-                { icon: AlertTriangle, label: "Budget Anomaly" },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="liquid-glass"
-                  style={{ borderRadius: "9999px", padding: "6px 12px", fontSize: "12px", color: "hsl(var(--muted-foreground))", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                  <Icon size={11} style={{ opacity: 0.5 }} /> {label}
+            {/* Compact hero: input and manifesto */}
+            <div className="max-w-2xl mx-auto text-center">
+              <div className="max-w-xl w-full space-y-4 mx-auto">
+                <div className="liquid-glass rounded-full pl-6 pr-2 py-2 flex items-center gap-3">
+                  <input placeholder="Enter your email" className="bg-transparent outline-none w-full text-white placeholder:text-white/40 text-base" />
+                  <button className="bg-white rounded-full p-3 text-black"><ArrowRight size={20} /></button>
                 </div>
-              ))}
-            </motion.div>
-          </motion.div>
+
+                <p className="text-white text-sm leading-relaxed px-4">Stay updated with the latest news and insights. Subscribe to our newsletter today and never miss out on exciting updates.</p>
+
+                <div className="flex justify-center">
+                  <button className="liquid-glass rounded-full px-8 py-3 text-white text-sm font-medium hover:bg-white/5 transition-colors">Read our manifesto</button>
+                </div>
+              </div>
+            </div>
 
           {/* ── Dashboard + Video Area ── */}
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }}
