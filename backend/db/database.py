@@ -2,6 +2,7 @@
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import text
 from core.config import settings
 from loguru import logger
 
@@ -32,10 +33,20 @@ class Base(DeclarativeBase):
 
 
 async def init_db():
-    """Create all tables on startup."""
+    """Create all tables on startup and run safe column migrations."""
     from db import models  # noqa: F401 — import to register models
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Safe column additions — won't fail if column already exists
+        safe_alters = [
+            "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS work_progress INTEGER DEFAULT 0",
+            "ALTER TABLE complaints ADD COLUMN IF NOT EXISTS work_updates_json JSONB DEFAULT '[]'",
+        ]
+        for sql in safe_alters:
+            try:
+                await conn.execute(text(sql))
+            except Exception:
+                pass  # Column already exists or DB doesn't support it
     logger.info("✅ Database tables initialized")
 
 

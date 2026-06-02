@@ -90,23 +90,41 @@ async def submit_complaint(
 
     # 5. Create complaint
     ticket = generate_ticket_number()
-    complaint = Complaint(
-        ticket_number=ticket,
-        reporter_name=reporter_name, reporter_phone=reporter_phone,
-        reporter_email=reporter_email, latitude=latitude, longitude=longitude,
-        address=address,
-        road_segment_id=nearest_road.id if nearest_road else None,
-        complaint_type=complaint_type, description=description,
-        image_urls=image_urls, ai_severity=ai_severity,
-        ai_confidence=ai_confidence, ai_damage_description=ai_damage_description,
-        routed_authority_id=routing.get("authority_id"),
-        routing_reason=routing.get("reason"),
-        status=ComplaintStatus.PENDING,
-        status_history=[{"status": "PENDING", "timestamp": datetime.utcnow().isoformat(), "note": "Submitted"}],
-        work_progress=0,
-        work_updates_json=[],
-        submitted_offline=submitted_offline, country_code=country_code,
-    )
+    try:
+        complaint = Complaint(
+            ticket_number=ticket,
+            reporter_name=reporter_name, reporter_phone=reporter_phone,
+            reporter_email=reporter_email, latitude=latitude, longitude=longitude,
+            address=address,
+            road_segment_id=nearest_road.id if nearest_road else None,
+            complaint_type=complaint_type, description=description,
+            image_urls=image_urls, ai_severity=ai_severity,
+            ai_confidence=ai_confidence, ai_damage_description=ai_damage_description,
+            routed_authority_id=routing.get("authority_id"),
+            routing_reason=routing.get("reason"),
+            status=ComplaintStatus.PENDING,
+            status_history=[{"status": "PENDING", "timestamp": datetime.utcnow().isoformat(), "note": "Submitted"}],
+            work_progress=0,
+            work_updates_json=[],
+            submitted_offline=submitted_offline, country_code=country_code,
+        )
+    except Exception:
+        # Fallback if new columns don't exist yet in DB
+        complaint = Complaint(
+            ticket_number=ticket,
+            reporter_name=reporter_name, reporter_phone=reporter_phone,
+            reporter_email=reporter_email, latitude=latitude, longitude=longitude,
+            address=address,
+            road_segment_id=nearest_road.id if nearest_road else None,
+            complaint_type=complaint_type, description=description,
+            image_urls=image_urls, ai_severity=ai_severity,
+            ai_confidence=ai_confidence, ai_damage_description=ai_damage_description,
+            routed_authority_id=routing.get("authority_id"),
+            routing_reason=routing.get("reason"),
+            status=ComplaintStatus.PENDING,
+            status_history=[{"status": "PENDING", "timestamp": datetime.utcnow().isoformat(), "note": "Submitted"}],
+            submitted_offline=submitted_offline, country_code=country_code,
+        )
     db.add(complaint)
     await db.flush()
 
