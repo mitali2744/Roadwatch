@@ -90,7 +90,7 @@ export default function Layout() {
       {/* Sidebar (desktop, hidden on home) */}
       {!isHome && (
         <aside className="hidden md:flex fixed left-0 top-0 h-full w-16 flex-col items-center py-4 gap-1 z-40 pt-20"
-          style={{ background: "rgba(2,8,23,0.8)", backdropFilter: "blur(12px)", borderRight: "1px solid rgba(56,189,248,0.06)" }}>
+          style={{ background: "rgba(0,0,0,0.95)", backdropFilter: "blur(12px)", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} end={to === "/"} title={label}
               className={({ isActive }) => clsx(

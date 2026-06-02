@@ -8,8 +8,8 @@
   * { box-sizing: border-box; }
   body {
     @apply font-sans antialiased;
-    background: #020817;
-    color: #e2e8f0;
+    background: #000000;
+    color: #f1f5f9;
     margin: 0;
     padding: 0;
   }
@@ -21,10 +21,10 @@
 @layer components {
   /* ── Glass card ── */
   .glass {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.06);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.10);
     position: relative;
     overflow: hidden;
   }
@@ -47,15 +47,16 @@
   /* ── Glow card ── */
   .glow-card {
     @apply glass rounded-2xl;
-    box-shadow: 0 0 0 1px rgba(56,189,248,0.05),
+    background: rgba(255,255,255,0.06) !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08),
                 0 4px 24px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.06);
+                inset 0 1px 0 rgba(255,255,255,0.08);
     transition: box-shadow 0.3s ease, transform 0.3s ease;
   }
   .glow-card:hover {
-    box-shadow: 0 0 0 1px rgba(56,189,248,0.15),
-                0 8px 40px rgba(56,189,248,0.08),
-                inset 0 1px 0 rgba(255,255,255,0.08);
+    box-shadow: 0 0 0 1px rgba(56,189,248,0.2),
+                0 8px 40px rgba(56,189,248,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.1);
     transform: translateY(-2px);
   }
 
@@ -79,11 +80,11 @@
   /* ── Input ── */
   .input {
     @apply glass rounded-xl px-4 py-2.5 w-full text-sm text-white outline-none transition-all;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07) !important;
   }
-  .input::placeholder { color: rgba(255,255,255,0.25); }
-  .input:focus { border-color: rgba(56,189,248,0.4); box-shadow: 0 0 0 3px rgba(56,189,248,0.08); }
+  .input::placeholder { color: rgba(255,255,255,0.4); }
+  .input:focus { border-color: rgba(56,189,248,0.6); box-shadow: 0 0 0 3px rgba(56,189,248,0.1); }
 
   /* ── Badges ── */
   .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
