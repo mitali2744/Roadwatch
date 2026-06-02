@@ -28,7 +28,8 @@ function ProgressBar({ value }: { value: number }) {
 }
 
 function ComplaintCard({ complaint, onClick }: { complaint: any; onClick: () => void }) {
-  const cfg = STATUS_CONFIG[complaint.status] || STATUS_CONFIG.PENDING;
+  const rawStatus = (complaint.status||"").replace("ComplaintStatus.","");
+  const cfg = STATUS_CONFIG[rawStatus] || STATUS_CONFIG.PENDING;
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2, boxShadow: `0 8px 40px ${cfg.glow}` }}
@@ -52,11 +53,11 @@ function ComplaintCard({ complaint, onClick }: { complaint: any; onClick: () => 
         </div>
       </div>
 
-      <div style={{ fontWeight: 600, color: "white", marginBottom: "4px", fontSize: "15px" }}>
-        {complaint.complaint_type?.replace("_", " ")}
+      <div className="font-semibold text-white mb-1 text-base">
+        {(complaint.complaint_type||"").replace("ComplaintType.","").replace("_"," ")}
       </div>
       {complaint.address && (
-        <div className="flex items-center gap-1 mb-3" style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px" }}>
+        <div className="flex items-center gap-1 mb-3" style={{ color: "rgba(255,255,255,0.5)", fontSize: "12px" }}>
           <MapPin size={11} /> {complaint.address}
         </div>
       )}

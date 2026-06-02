@@ -163,28 +163,34 @@ export default function AdminPage() {
                   style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                  onClick={() => { setSelected(c); setProgress(c.work_progress || 0); setNewStatus(c.status); }}>
-                  <td style={{ padding: "14px 16px", fontFamily: "monospace", color: "rgba(255,255,255,0.6)", fontSize: "12px" }}>{c.ticket_number}</td>
-                  <td style={{ padding: "14px 16px", color: "white", fontWeight: 500 }}>{c.complaint_type?.replace("_"," ")}</td>
-                  <td style={{ padding: "14px 16px", color: "rgba(255,255,255,0.4)", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.address || "—"}</td>
+                  onClick={() => { setSelected(c); setProgress(c.work_progress || (c.status === "RESOLVED" ? 100 : 0)); setNewStatus(c.status?.replace("ComplaintStatus.","") || "PENDING"); }}>
+                  <td style={{ padding: "14px 16px", fontFamily: "monospace", color: "rgba(255,255,255,0.7)", fontSize: "12px" }}>{c.ticket_number}</td>
+                  <td style={{ padding: "14px 16px", color: "white", fontWeight: 500 }}>{(c.complaint_type || "").replace("ComplaintType.","").replace("_"," ")}</td>
+                  <td style={{ padding: "14px 16px", color: "rgba(255,255,255,0.55)", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.address || "—"}</td>
                   <td style={{ padding: "14px 16px" }}>
-                    <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "9999px", background: `${STATUS_COLORS[c.status] || "#fff"}15`, border: `1px solid ${STATUS_COLORS[c.status] || "#fff"}40`, color: STATUS_COLORS[c.status] || "#fff" }}>
-                      {c.status}
-                    </span>
+                    {(() => { const s = (c.status||"").replace("ComplaintStatus.",""); const col = STATUS_COLORS[s] || "#fff"; return (
+                      <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "9999px", background: `${col}20`, border: `1px solid ${col}50`, color: col, fontWeight: 600 }}>
+                        {s.replace("_"," ")}
+                      </span>
+                    );})()}
                   </td>
                   <td style={{ padding: "14px 16px", minWidth: "120px" }}>
-                    <div className="flex items-center gap-2">
-                      <ProgressBar value={c.work_progress || 0} />
-                      <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", minWidth: "32px" }}>{c.work_progress || 0}%</span>
-                    </div>
+                    {(() => { const prog = c.work_progress || ((c.status||"").includes("RESOLVED") ? 100 : 0); return (
+                      <div className="flex items-center gap-2">
+                        <ProgressBar value={prog} />
+                        <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", minWidth: "32px", fontWeight: 600 }}>{prog}%</span>
+                      </div>
+                    );})()}
                   </td>
                   <td style={{ padding: "14px 16px" }}>
                     {c.ai_severity && (
-                      <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "9999px", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }}>{c.ai_severity}</span>
+                      <span style={{ fontSize: "11px", padding: "3px 8px", borderRadius: "9999px", background: "rgba(255,255,255,0.1)", color: "white", fontWeight: 500 }}>
+                        {(c.ai_severity||"").replace("SeverityLevel.","")}
+                      </span>
                     )}
                   </td>
                   <td style={{ padding: "14px 16px" }}>
-                    <button onClick={e => { e.stopPropagation(); setSelected(c); setProgress(c.work_progress || 0); setNewStatus(c.status); }}
+                    <button onClick={e => { e.stopPropagation(); setSelected(c); setProgress(c.work_progress || ((c.status||"").includes("RESOLVED") ? 100 : 0)); setNewStatus((c.status||"").replace("ComplaintStatus.","")); }}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                       style={{ background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.25)", color: "#a78bfa" }}>
                       Update
@@ -212,40 +218,51 @@ export default function AdminPage() {
               <div className="flex items-center justify-between mb-5">
                 <div>
                   <div style={{ fontFamily: "monospace", fontWeight: 700, color: "white", fontSize: "16px" }}>{selected.ticket_number}</div>
-                  <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "13px", marginTop: "2px" }}>{selected.complaint_type?.replace("_"," ")} · {selected.address || "No address"}</div>
+                  <div style={{ color: "rgba(255,255,255,0.55)", fontSize: "13px", marginTop: "2px" }}>
+                    {(selected.complaint_type||"").replace("ComplaintType.","").replace("_"," ")} · {selected.address || "No address"}
+                  </div>
                 </div>
-                <button onClick={() => setSelected(null)} style={{ color: "rgba(255,255,255,0.3)", background: "none", border: "none", cursor: "pointer", fontSize: "20px" }}>×</button>
+                <button onClick={() => setSelected(null)} style={{ color: "rgba(255,255,255,0.4)", background: "none", border: "none", cursor: "pointer", fontSize: "20px" }}>×</button>
               </div>
 
               <div className="space-y-4">
                 {/* Progress slider */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Work Progress</label>
-                    <span style={{ fontSize: "20px", fontWeight: 700, color: progress === 100 ? "#34d399" : "white" }}>{progress}%</span>
+                    <label style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Work Progress</label>
+                    <span style={{ fontSize: "22px", fontWeight: 700, color: progress === 100 ? "#34d399" : "white" }}>{progress}%</span>
                   </div>
-                  <input type="range" min={0} max={100} step={5} value={progress} onChange={e => setProgress(Number(e.target.value))}
-                    className="w-full" style={{ accentColor: "#a78bfa" }} />
+                  <input type="range" min={0} max={100} step={5} value={progress} onChange={e => {
+                    const v = Number(e.target.value);
+                    setProgress(v);
+                    if (v === 100) setNewStatus("RESOLVED");
+                    else if (v > 0) setNewStatus("IN_PROGRESS");
+                  }} className="w-full" style={{ accentColor: "#a78bfa" }} />
                   <ProgressBar value={progress} />
                 </div>
 
                 {/* Status */}
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", color: "rgba(255,255,255,0.4)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Status</label>
+                  <label style={{ display: "block", fontSize: "12px", color: "rgba(255,255,255,0.6)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Status</label>
                   <select value={newStatus} onChange={e => setNewStatus(e.target.value)}
-                    className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                    {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                    style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.2)", color: "white" }}>
+                    <option value="PENDING" style={{ background:"#1a1a2e" }}>PENDING</option>
+                    <option value="ACKNOWLEDGED" style={{ background:"#1a1a2e" }}>ACKNOWLEDGED</option>
+                    <option value="IN_PROGRESS" style={{ background:"#1a1a2e" }}>IN PROGRESS</option>
+                    <option value="RESOLVED" style={{ background:"#1a1a2e" }}>RESOLVED</option>
+                    <option value="ESCALATED" style={{ background:"#1a1a2e" }}>ESCALATED</option>
+                    <option value="REJECTED" style={{ background:"#1a1a2e" }}>REJECTED</option>
                   </select>
                 </div>
 
                 {/* Note */}
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", color: "rgba(255,255,255,0.4)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Work Update Note</label>
+                  <label style={{ display: "block", fontSize: "12px", color: "rgba(255,255,255,0.6)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Work Update Note</label>
                   <textarea value={note} onChange={e => setNote(e.target.value)} rows={3}
                     placeholder="Describe what work was done..."
                     className="w-full rounded-xl px-4 py-3 text-sm text-white resize-none outline-none"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }} />
                 </div>
 
                 <div className="flex gap-3">
