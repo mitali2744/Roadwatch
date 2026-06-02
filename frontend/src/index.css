@@ -8,23 +8,24 @@
   * { box-sizing: border-box; }
   body {
     @apply font-sans antialiased;
-    background: #000000;
-    color: #f1f5f9;
+    background: #000;
+    color: #ffffff;
     margin: 0;
     padding: 0;
   }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: #020817; }
-  ::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 9999px; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #000; }
+  ::-webkit-scrollbar-thumb { background: #444; border-radius: 9999px; }
 }
 
 @layer components {
-  /* ── Glass card ── */
+
+  /* Glass card — more visible */
   .glass {
-    background: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.09);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.14);
     position: relative;
     overflow: hidden;
   }
@@ -34,68 +35,61 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg,
-      rgba(255,255,255,0.15) 0%,
-      rgba(255,255,255,0.03) 50%,
-      rgba(255,255,255,0.08) 100%);
+    background: linear-gradient(135deg,rgba(255,255,255,0.2) 0%,rgba(255,255,255,0.04) 50%,rgba(255,255,255,0.12) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
   }
 
-  /* ── Glow card ── */
+  /* Glow card */
   .glow-card {
     @apply glass rounded-2xl;
-    background: rgba(255,255,255,0.06) !important;
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.08),
-                0 4px 24px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.08);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    background: rgba(20,20,30,0.85) !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 4px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: box-shadow 0.3s, transform 0.3s;
   }
   .glow-card:hover {
-    box-shadow: 0 0 0 1px rgba(56,189,248,0.2),
-                0 8px 40px rgba(56,189,248,0.1),
-                inset 0 1px 0 rgba(255,255,255,0.1);
+    box-shadow: 0 0 0 1px rgba(56,189,248,0.3), 0 8px 40px rgba(56,189,248,0.12), inset 0 1px 0 rgba(255,255,255,0.12);
     transform: translateY(-2px);
   }
 
-  /* ── Buttons ── */
+  /* Buttons */
   .btn-primary {
-    @apply glass rounded-xl px-5 py-2.5 text-sm font-medium text-white transition-all;
-    background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(99,102,241,0.2));
-    border: 1px solid rgba(56,189,248,0.3);
-    box-shadow: 0 0 20px rgba(56,189,248,0.1);
+    @apply rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all;
+    background: linear-gradient(135deg,rgba(56,189,248,0.35),rgba(99,102,241,0.35));
+    border: 1px solid rgba(56,189,248,0.5);
+    box-shadow: 0 0 20px rgba(56,189,248,0.15);
   }
-  .btn-primary:hover {
-    background: linear-gradient(135deg, rgba(56,189,248,0.3), rgba(99,102,241,0.3));
-    box-shadow: 0 0 30px rgba(56,189,248,0.2);
-  }
+  .btn-primary:hover { background: linear-gradient(135deg,rgba(56,189,248,0.5),rgba(99,102,241,0.5)); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
   .btn-secondary {
-    @apply glass rounded-xl px-5 py-2.5 text-sm font-medium text-slate-300 transition-all;
-    border: 1px solid rgba(255,255,255,0.08);
+    @apply rounded-xl px-5 py-2.5 text-sm font-medium text-white transition-all;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
   }
-  .btn-secondary:hover { border-color: rgba(255,255,255,0.15); color: white; }
+  .btn-secondary:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.28); }
 
-  /* ── Input ── */
+  /* Input */
   .input {
-    @apply glass rounded-xl px-4 py-2.5 w-full text-sm text-white outline-none transition-all;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.07) !important;
+    @apply rounded-xl px-4 py-2.5 w-full text-sm font-medium text-white outline-none transition-all;
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.18);
   }
-  .input::placeholder { color: rgba(255,255,255,0.4); }
-  .input:focus { border-color: rgba(56,189,248,0.6); box-shadow: 0 0 0 3px rgba(56,189,248,0.1); }
+  .input::placeholder { color: rgba(255,255,255,0.45); }
+  .input:focus { border-color: rgba(56,189,248,0.65); box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
 
-  /* ── Badges ── */
-  .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
-  .badge-critical { @apply badge; background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
-  .badge-high     { @apply badge; background: rgba(249,115,22,0.15); color: #fdba74; border: 1px solid rgba(249,115,22,0.3); }
-  .badge-medium   { @apply badge; background: rgba(234,179,8,0.15);  color: #fde047; border: 1px solid rgba(234,179,8,0.3); }
-  .badge-low      { @apply badge; background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+  /* Badges — brighter */
+  .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold; }
+  .badge-critical { @apply badge; background: rgba(239,68,68,0.25);  color: #ff7675; border: 1px solid rgba(239,68,68,0.5); }
+  .badge-high     { @apply badge; background: rgba(249,115,22,0.25); color: #fd9644; border: 1px solid rgba(249,115,22,0.5); }
+  .badge-medium   { @apply badge; background: rgba(234,179,8,0.25);  color: #ffd32a; border: 1px solid rgba(234,179,8,0.5); }
+  .badge-low      { @apply badge; background: rgba(34,197,94,0.25);  color: #2ed573; border: 1px solid rgba(34,197,94,0.5); }
 
-  /* ── Glow text ── */
+  /* Glow text */
   .glow-text {
-    background: linear-gradient(135deg, #38bdf8, #818cf8, #38bdf8);
+    background: linear-gradient(135deg,#38bdf8,#818cf8,#38bdf8);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -105,40 +99,39 @@
   .serif { font-family: 'Instrument Serif', serif; }
 }
 
-/* ── Animations ── */
-@keyframes shimmer {
-  0% { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(56,189,248,0.2); }
-  50% { box-shadow: 0 0 40px rgba(56,189,248,0.4); }
-}
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
+/* Animations */
+@keyframes shimmer { 0%{background-position:0% center} 100%{background-position:200% center} }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
 .animate-float { animation: float 6s ease-in-out infinite; }
-.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
 .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 .animate-spin-slow { animation: spin-slow 20s linear infinite; }
 
-/* ── Liquid Glass (for chatbot orb panel) ── */
+/* Particle canvas */
+#particle-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+/* Chat bubbles */
+.chat-bubble { animation: fadeInUp 0.25s ease-out; }
+
+/* Leaflet dark */
+.leaflet-container { background: #000 !important; }
+.leaflet-popup-content-wrapper {
+  background: rgba(10,10,20,0.97) !important;
+  border: 1px solid rgba(56,189,248,0.25) !important;
+  border-radius: 12px !important;
+  color: #fff !important;
+  box-shadow: 0 0 30px rgba(56,189,248,0.1) !important;
+}
+.leaflet-popup-tip { background: rgba(10,10,20,0.97) !important; }
+
+/* Liquid glass (used in chatbot panel) */
 .liquid-glass {
-  background: rgba(255,255,255,0.01);
-  background-blend-mode: luminosity;
+  background: rgba(255,255,255,0.06);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: none;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.12);
   position: relative;
   overflow: hidden;
 }
@@ -148,37 +141,9 @@
   inset: 0;
   border-radius: inherit;
   padding: 1.4px;
-  background: linear-gradient(180deg,
-    rgba(255,255,255,0.45) 0%,
-    rgba(255,255,255,0.15) 20%,
-    rgba(255,255,255,0)    40%,
-    rgba(255,255,255,0)    60%,
-    rgba(255,255,255,0.15) 80%,
-    rgba(255,255,255,0.45) 100%);
+  background: linear-gradient(180deg,rgba(255,255,255,0.45) 0%,rgba(255,255,255,0.15) 20%,rgba(255,255,255,0) 40%,rgba(255,255,255,0) 60%,rgba(255,255,255,0.15) 80%,rgba(255,255,255,0.45) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
 }
-
-/* ── Particle canvas ── */
-#particle-canvas {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ── Chat bubbles ── */
-.chat-bubble { animation: fadeInUp 0.25s ease-out; }
-
-/* ── Mapbox/Leaflet dark override ── */
-.leaflet-container { background: #020817 !important; }
-.leaflet-popup-content-wrapper {
-  background: rgba(2,8,23,0.95) !important;
-  border: 1px solid rgba(56,189,248,0.2) !important;
-  border-radius: 12px !important;
-  color: #e2e8f0 !important;
-  box-shadow: 0 0 30px rgba(56,189,248,0.1) !important;
-}
-.leaflet-popup-tip { background: rgba(2,8,23,0.95) !important; }

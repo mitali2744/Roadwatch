@@ -90,12 +90,12 @@ export default function Layout() {
       {/* Sidebar (desktop, hidden on home) */}
       {!isHome && (
         <aside className="hidden md:flex fixed left-0 top-0 h-full w-16 flex-col items-center py-4 gap-1 z-40 pt-20"
-          style={{ background: "rgba(0,0,0,0.95)", backdropFilter: "blur(12px)", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+          style={{ background: "rgba(5,5,10,0.97)", backdropFilter: "blur(16px)", borderRight: "1px solid rgba(255,255,255,0.1)" }}>
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} end={to === "/"} title={label}
               className={({ isActive }) => clsx(
                 "flex flex-col items-center gap-1 p-2 rounded-xl transition-all w-12 text-xs",
-                isActive ? "text-sky-400" : "text-slate-600 hover:text-slate-300"
+                isActive ? "text-sky-300" : "text-slate-400 hover:text-white"
               )}>
               {({ isActive }) => (
                 <div className={clsx("p-2 rounded-xl transition-all", isActive && "bg-sky-400/10")}
