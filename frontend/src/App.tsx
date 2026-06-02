@@ -1,3 +1,5 @@
+// RoadWatch Frontend — Road Safety Hackathon 2026
+// Build: 2026-06-03
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
