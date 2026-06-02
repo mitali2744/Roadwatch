@@ -101,7 +101,7 @@ export default function TrackPage() {
               Complaint
             </span>
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "16px" }}>
+          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "16px" }}>
             Enter your ticket number to check real-time status
           </p>
         </motion.div>
@@ -155,7 +155,7 @@ export default function TrackPage() {
                 );
               })}
             </div>
-            <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "14px" }}>Enter a ticket number above to track your complaint</p>
+            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "14px" }}>Enter a ticket number above to track your complaint</p>
           </motion.div>
         )}
 
@@ -167,7 +167,7 @@ export default function TrackPage() {
             {/* Main status card — 3D tilt */}
             <TiltCard>
               <div className="rounded-2xl p-6 relative overflow-hidden"
-                style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${cfg.glow.replace("0.3","0.2")}`, boxShadow: `0 0 60px ${cfg.glow.replace("0.3","0.1")}` }}>
+                style={{ background: "rgba(255,255,255,0.09)", border: `1px solid ${cfg.glow.replace("0.3","0.2")}`, boxShadow: `0 0 60px ${cfg.glow.replace("0.3","0.1")}` }}>
                 {/* Glow blob */}
                 <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "200px", height: "200px", background: `radial-gradient(circle, ${cfg.glow.replace("0.3","0.15")} 0%, transparent 70%)`, borderRadius: "50%", pointerEvents: "none" }} />
 
@@ -214,10 +214,10 @@ export default function TrackPage() {
             {/* Authority */}
             {complaint.routed_to?.name && (
               <TiltCard>
-                <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
                   <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Assigned Authority</div>
                   <div style={{ fontWeight: 600, color: "white", marginBottom: "4px" }}>{complaint.routed_to.name}</div>
-                  <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginBottom: "10px" }}>{complaint.routed_to.type}</div>
+                  <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", marginBottom: "10px" }}>{complaint.routed_to.type}</div>
                   {complaint.routed_to.engineer && <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)" }}>Engineer: <span style={{ color: "rgba(255,255,255,0.8)" }}>{complaint.routed_to.engineer}</span></div>}
                   {complaint.routed_to.contact && (
                     <a href={`tel:${complaint.routed_to.contact}`} style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#38bdf8", marginTop: "8px", textDecoration: "none" }}>
@@ -230,7 +230,7 @@ export default function TrackPage() {
 
             {/* Timeline */}
             {complaint.status_history?.length > 0 && (
-              <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
                 <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Status Timeline</div>
                 <div className="relative">
                   {/* Vertical line */}
@@ -264,7 +264,7 @@ export default function TrackPage() {
                   <Shield size={14} style={{ color: "#34d399" }} />
                   <div style={{ fontSize: "11px", color: "rgba(52,211,153,0.7)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Tamper-Proof Audit Trail</div>
                 </div>
-                <div style={{ fontFamily: "monospace", fontSize: "11px", color: "rgba(255,255,255,0.25)", wordBreak: "break-all" }}>{complaint.ledger_hash}</div>
+                <div style={{ fontFamily: "monospace", fontSize: "11px", color: "rgba(255,255,255,0.6)", wordBreak: "break-all" }}>{complaint.ledger_hash}</div>
                 <div style={{ fontSize: "12px", color: "#34d399", marginTop: "8px" }}>✅ Chain integrity verified</div>
               </div>
             )}

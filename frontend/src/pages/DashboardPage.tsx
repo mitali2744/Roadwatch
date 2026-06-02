@@ -108,7 +108,7 @@ export default function DashboardPage() {
                 Dashboard
               </span>
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px" }}>Public road spending and accountability metrics</p>
+            <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>Public road spending and accountability metrics</p>
           </div>
           <select value={country} onChange={e => setCountry(e.target.value)}
             style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", borderRadius: "12px", padding: "8px 14px", fontSize: "13px", outline: "none" }}>
@@ -134,10 +134,10 @@ export default function DashboardPage() {
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: i * 0.1 }}
                       className="rounded-2xl p-5 relative overflow-hidden h-full"
-                      style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${glow.replace("0.2","0.15")}`, boxShadow: `0 0 40px ${glow.replace("0.2","0.08")}` }}>
+                      style={{ background: "rgba(255,255,255,0.09)", border: `1px solid ${glow.replace("0.2","0.15")}`, boxShadow: `0 0 40px ${glow.replace("0.2","0.08")}` }}>
                       {/* Glow blob */}
                       <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", background: `radial-gradient(circle, ${glow} 0%, transparent 70%)`, borderRadius: "50%", pointerEvents: "none" }} />
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(255,255,255,0.4)", fontSize: "11px", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "rgba(255,255,255,0.75)", fontSize: "11px", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                         <Icon size={12} style={{ color }} /> {label}
                       </div>
                       <div style={{ fontSize: "28px", fontWeight: 700, color, marginBottom: "4px", fontVariantNumeric: "tabular-nums" }}>{value}</div>
@@ -162,7 +162,7 @@ export default function DashboardPage() {
                 <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }} viewport={{ once: true }}
                   className="rounded-2xl p-6 relative overflow-hidden"
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
                   <div style={{ position: "absolute", bottom: "-40px", left: "-40px", width: "200px", height: "200px", background: "radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
                   <h3 style={{ fontWeight: 600, color: "white", marginBottom: "20px", fontSize: "15px" }}>Budget Sanctioned vs Spent (₹Cr)</h3>
                   {budgetData.length > 0 ? (
@@ -187,7 +187,7 @@ export default function DashboardPage() {
                 <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }} viewport={{ once: true }}
                   className="rounded-2xl p-6 relative overflow-hidden"
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
                   <div style={{ position: "absolute", top: "-40px", right: "-40px", width: "200px", height: "200px", background: "radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
                   <h3 style={{ fontWeight: 600, color: "white", marginBottom: "20px", fontSize: "15px" }}>Complaints by Type</h3>
                   {complaintsByType.length > 0 ? (
@@ -210,7 +210,7 @@ export default function DashboardPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }} viewport={{ once: true }}
               className="rounded-2xl p-6 mb-8 relative overflow-hidden"
-              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
               <div style={{ position: "absolute", top: "-60px", left: "50%", transform: "translateX(-50%)", width: "400px", height: "200px", background: "radial-gradient(circle, rgba(251,191,36,0.04) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
                 <div style={{ width: "32px", height: "32px", borderRadius: "10px", background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
                       style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < 5 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
                       <div>
                         <div style={{ color: "white", fontSize: "14px", fontWeight: 500 }}>{road.name}</div>
-                        <div style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px" }}>{road.road_number} · {road.road_type}</div>
+                        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "12px" }}>{road.road_number} · {road.road_type}</div>
                       </div>
                       <span className={clsx("badge", { "badge-critical": road.deterioration_risk==="CRITICAL", "badge-high": road.deterioration_risk==="HIGH", "badge-medium": road.deterioration_risk==="MEDIUM" })}>
                         {road.deterioration_risk}

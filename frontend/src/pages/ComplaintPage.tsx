@@ -99,7 +99,7 @@ export default function ComplaintPage() {
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, type: "spring" }}
         className="max-w-md w-full text-center rounded-3xl p-8 relative overflow-hidden"
-        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(52,211,153,0.2)", boxShadow: "0 0 80px rgba(52,211,153,0.1)" }}>
+        style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(52,211,153,0.2)", boxShadow: "0 0 80px rgba(52,211,153,0.1)" }}>
         <div style={{ position: "absolute", top: "-60px", left: "50%", transform: "translateX(-50%)", width: "300px", height: "200px", background: "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
         <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}
           className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
@@ -110,16 +110,16 @@ export default function ComplaintPage() {
           {result?.offline ? "Saved Offline" : "Complaint Submitted!"}
         </h2>
         {!result?.offline && (
-          <div className="rounded-2xl p-4 mb-4" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="rounded-2xl p-4 mb-4" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.2)" }}>
             <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Ticket Number</div>
             <div style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "22px", color: "white", letterSpacing: "0.05em" }}>{result?.ticket_number}</div>
           </div>
         )}
         {result?.ai_severity && (
-          <div className="rounded-2xl p-4 mb-4 text-left" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="rounded-2xl p-4 mb-4 text-left" style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)" }}>
             <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>AI Analysis</div>
             <span className={clsx("badge", { "badge-critical": result.ai_severity==="CRITICAL", "badge-high": result.ai_severity==="HIGH", "badge-medium": result.ai_severity==="MEDIUM", "badge-low": result.ai_severity==="LOW" })}>{result.ai_severity}</span>
-            {result.routed_to && <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "8px" }}>Routed to: <span style={{ color: "rgba(255,255,255,0.7)" }}>{result.routed_to}</span></div>}
+            {result.routed_to && <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.75)", marginTop: "8px" }}>Routed to: <span style={{ color: "rgba(255,255,255,0.7)" }}>{result.routed_to}</span></div>}
           </div>
         )}
         <div className="flex gap-3 justify-center">
@@ -167,7 +167,7 @@ export default function ComplaintPage() {
               </span>
             </h1>
             <motion.a href="#how-it-works" whileHover={{ scale: 1.02 }} className="inline-block text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>How it works →</motion.a>
-          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "15px" }}>AI will analyze your photos and auto-route to the right authority</p>
+          <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "15px" }}>AI will analyze your photos and auto-route to the right authority</p>
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-4 liquid-glass p-6 rounded-3xl" aria-label="Report road issue form">
@@ -175,8 +175,8 @@ export default function ComplaintPage() {
           {/* Issue type */}
           <TiltCard>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.35)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Issue Type *</label>
+              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
+              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Issue Type *</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {COMPLAINT_TYPES.map(({ value, label, color }) => (
                   <motion.button key={value} type="button" onClick={() => setForm(f => ({ ...f, complaint_type: value }))}
@@ -198,11 +198,11 @@ export default function ComplaintPage() {
           {/* Description */}
           <TiltCard>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.35)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Description *</label>
+              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
+              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Description *</label>
               <textarea
                 className="w-full rounded-xl px-4 py-3 text-sm text-white resize-none outline-none"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", minHeight: "90px" }}
+                style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)", minHeight: "90px" }}
                 placeholder="Describe the issue in detail..."
                 value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 onFocus={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)")}
@@ -214,8 +214,8 @@ export default function ComplaintPage() {
           {/* GPS */}
           <TiltCard>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.35)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>GPS Location *</label>
+              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
+              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>GPS Location *</label>
               <motion.button type="button" onClick={getLocation} disabled={locating}
                 whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
                 className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm transition-all"
@@ -234,21 +234,21 @@ export default function ComplaintPage() {
           {/* Photos */}
           <TiltCard>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.35)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                Photos <span style={{ color: "rgba(255,255,255,0.2)", textTransform: "none", letterSpacing: 0 }}>(AI severity analysis)</span>
+              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
+              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Photos <span style={{ color: "rgba(255,255,255,0.55)", textTransform: "none", letterSpacing: 0 }}>(AI severity analysis)</span>
               </label>
               <div {...getRootProps()} className="rounded-xl p-8 text-center cursor-pointer transition-all"
                 style={{ border: `2px dashed ${isDragActive ? "rgba(56,189,248,0.5)" : "rgba(255,255,255,0.07)"}`, background: isDragActive ? "rgba(56,189,248,0.04)" : "transparent" }}>
                 <input {...getInputProps()} />
-                <Camera size={24} className="mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
-                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.25)" }}>{images.length >= 3 ? "Max 3 images" : "Drop photos or click to upload"}</p>
+                <Camera size={24} className="mx-auto mb-2" style={{ color: "rgba(255,255,255,0.55)" }} />
+                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)" }}>{images.length >= 3 ? "Max 3 images" : "Drop photos or click to upload"}</p>
               </div>
               {previews.length > 0 && (
                 <div className="flex gap-2 mt-3">
                   {previews.map((src, i) => (
                     <div key={i} className="relative">
-                      <img src={src} alt="" className="w-20 h-20 object-cover rounded-xl" style={{ border: "1px solid rgba(255,255,255,0.08)" }} />
+                      <img src={src} alt="" className="w-20 h-20 object-cover rounded-xl" style={{ border: "1px solid rgba(255,255,255,0.2)" }} />
                       <button type="button" onClick={() => { setImages(p => p.filter((_,j)=>j!==i)); setPreviews(p => p.filter((_,j)=>j!==i)); }}
                         className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
                         style={{ background: "#ef4444" }}>×</button>
@@ -262,9 +262,9 @@ export default function ComplaintPage() {
           {/* Reporter */}
           <TiltCard>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.35)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                Your Details <span style={{ color: "rgba(255,255,255,0.2)", textTransform: "none", letterSpacing: 0 }}>(optional)</span>
+              className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)" }}>
+              <label style={{ display: "block", fontSize: "11px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Your Details <span style={{ color: "rgba(255,255,255,0.55)", textTransform: "none", letterSpacing: 0 }}>(optional)</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
@@ -272,7 +272,7 @@ export default function ComplaintPage() {
                   { placeholder: "Phone (for updates)", key: "reporter_phone" },
                 ].map(({ placeholder, key }) => (
                   <input key={key} className="rounded-xl px-4 py-3 text-sm text-white outline-none w-full"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+                    style={{ background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.18)" }}
                     placeholder={placeholder}
                     value={(form as any)[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                     onFocus={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)")}
